@@ -1,5 +1,6 @@
 from pyexpat.errors import codes
 import boto3
+import http.client
 
 
 
@@ -78,7 +79,7 @@ def create_cluster_target_group(name, instances, vpcId):
     response = elb.register_targets(TargetGroupArn=arn, Targets=targets)
     return group, response, arn
 
-def create_load_balancer(name, securityGroupID=None):
+def create_load_balancer(name, securityGroupIDs):
     balancer = elb.create_load_balancer(
         Name=name,
         Subnets=[
@@ -88,7 +89,7 @@ def create_load_balancer(name, securityGroupID=None):
         Scheme='internet-facing',
         Type='application',
         IpAddressType='ipv4',
-        # SecurityGroups=securityGroupID
+        SecurityGroups=securityGroupIDs
     )
     return balancer
 
@@ -107,10 +108,12 @@ def attach_target_group_to_load_balancer(loadBalancerArn, targetGroupArn, port):
     return response
 
 def wait_for_flask(instances):
+    # since connection.request can throw an error, this will mimick an connection object
+    # and allow the operation connection.getresponse().code
+    # not used anywhere except here
     class FakeCode:
         def __init__(self) -> None:
             self.code = 500
-
     class FakeConnection:
         def __init__(self) -> None:
             pass
@@ -118,8 +121,10 @@ def wait_for_flask(instances):
             return FakeCode()
 
     public_ips = [instance.public_ip_address for instance in instances]
-    import http.client
     codes = None
+
+    # stay in the while loop as long as all the instances don't return a response
+    # with 200 something (2XX = request is a success so flask is running)
     while True:
         connections = [http.client.HTTPConnection(ip) for ip in public_ips]
         for i in range(len(connections)):
@@ -127,13 +132,6 @@ def wait_for_flask(instances):
                 connections[i].request('GET', '/')
             except:
                 connections[i] = FakeConnection()
-        # ================================================================ Logging purpose only
-        if codes == None:
-            previous = [False for _ in connections]
-        else:
-            previous = [(code >= 200 and code < 300) for code in codes]
-        # ================================================================
-
 
         codes = [connection.getresponse().code for connection in connections]
         all_ready = True
@@ -141,15 +139,46 @@ def wait_for_flask(instances):
         for code in codes:
             all_ready = all_ready and (code >= 200 and code < 300)
         
-        # ================================================================ Logging purpose only
-        ready = [(code >= 200 and code < 300) for code in codes]
-        for i in range(len(ready)):
-            if previous[i] == False and ready[i] == True:
-                print("Flask is ready at IP address ", public_ips[i])
-        # ================================================================
 
         if all_ready:
             break
+
+def getIpPolicy(port):
+    return {
+        'FromPort': port,
+        'IpProtocol': 'tcp',
+        'IpRanges': [
+            {
+                'CidrIp': '0.0.0.0/0',
+                'Description': 'everything'
+            },
+        ],
+        'ToPort': port,
+    }
+
+def create_security_group_elb(groupname, description, listening_ports, dest_ports):
+    security_group = ec2.create_security_group(GroupName=groupname, Description=description)
+    
+    # send to every destination on port 80
+    egress_IpPermissions=[]
+    for port in dest_ports:
+        egress_IpPermissions.append(
+            getIpPolicy(port)
+        )
+    # everyone can send us stuff on the following listening ports
+    ingress_IpPermissions=[]
+    for port in listening_ports:
+        ingress_IpPermissions.append(
+            getIpPolicy(port)
+        )
+
+    security_group.authorize_ingress(
+        IpPermissions=ingress_IpPermissions
+    )
+    security_group.authorize_egress(
+        IpPermissions=egress_IpPermissions
+    )
+    return security_group
 
 print("create security group: ")
 group = create_security_group("test 2", "test 2")
@@ -189,8 +218,12 @@ print("create target groups 2: ")
 target_group2, attach_succeeded2, target_arn2 = create_cluster_target_group("target-cluster-2", instanceIDs2, VPC_ID)
 print("done")
 
+print("creating security group for the load balancer")
+elb_sec_group = create_security_group_elb("elbSecurityGroup", "securituy group for ELB", [8080, 8000], [80])
+print("done")
+
 print("create load balancer: ")
-balancer = create_load_balancer("my-load-balancer")
+balancer = create_load_balancer("my-load-balancer", [elb_sec_group.id])
 balancer_arn = balancer['LoadBalancers'][0]['LoadBalancerArn']
 print("done")
 
@@ -199,15 +232,13 @@ attach_target_group_to_load_balancer(balancer_arn, target_arn1, 8080)
 print("done")
 
 print("attach target 2")
-attach_target_group_to_load_balancer(balancer_arn, target_arn2, 80)
+attach_target_group_to_load_balancer(balancer_arn, target_arn2, 8000)
 print("done")
-
-print("wait until flask has been deployed on all machines:")
-# TODO
-# I'm thinking about, like, sending http requests until they all get "health check" back
-
 from time import time
 
+print("wait until flask has been deployed on all machines:")
 t = time()
 wait_for_flask(all_instances)
 print("total wait time:", time() - t, "seconds")
+
+
