@@ -4,4 +4,4 @@ ADD caller.py /
 
 RUN pip install requests
 
-CMD [ "python", "./benchmark.py" ]
+CMD [ "python", "./benchmark_calls.py" ]
