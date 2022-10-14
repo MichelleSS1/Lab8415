@@ -1,6 +1,6 @@
 FROM python:3
 
-ADD caller.py /
+ADD benchmark_calls.py /
 
 RUN pip install requests
 
