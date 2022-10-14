@@ -1,6 +1,6 @@
 FROM python:3
 
-ADD benchmark_calls.py .
+COPY benchmark_calls.py .
 
 RUN pip install requests
 
