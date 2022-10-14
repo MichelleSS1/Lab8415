@@ -93,17 +93,15 @@ def create_test_threads(path:str):
 
 if __name__ == '__main__':
     print("Starting Tests")
-    make_calls(5, CLUSTER1_PATH)
-    make_calls(5, CLUSTER2_PATH)
 
-    # # Creating test threads for both clusters.
-    # # We keep the threads to join them (make sure they end their execution) before shutdown.
-    # threads = []
-    # threads.extend(create_test_threads(CLUSTER1_PATH))
-    # threads.extend(create_test_threads(CLUSTER2_PATH))
+    # Creating test threads for both clusters.
+    # We keep the threads to join them (make sure they end their execution) before shutdown.
+    threads = []
+    threads.extend(create_test_threads(CLUSTER1_PATH))
+    threads.extend(create_test_threads(CLUSTER2_PATH))
 
-    # # Join all threads before exiting.
-    # for thread in threads:
-    #     thread.join()
+    # Join all threads before exiting.
+    for thread in threads:
+        thread.join()
 
     print("Completed tests!")
