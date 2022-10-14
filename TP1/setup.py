@@ -1,8 +1,5 @@
-from pyexpat.errors import codes
 import boto3
 import http.client
-
-
 
 USER_DATA = '''#!/bin/bash
 cd /home/ubuntu
@@ -30,7 +27,22 @@ elb = boto3.client("elbv2", region_name=REGION_NAME)
 ec2client = boto3.client('ec2', region_name=REGION_NAME)
 SUBNETS = ec2client.describe_subnets()['Subnets']
 
-def create_security_group(groupname, description, http=True, ssh=True, https=True):
+def create_security_group(groupname:str, description:str, http=True, ssh=True, https=True):
+    """
+    creates a security group for instances with GroupName = groupname, Description = description. The parameters http, 
+    ssh and https specifies whether incoming HTTP, SSH and HTTPS traffic are allowed; if it is allowed, all sources 
+    of such traffic are allowed Ex. if http is true, then anyone may send an HTTP request to the instance with this
+    security group.
+
+    @param groupname:str    name of the security group
+    @param description:str  description of the security group
+    @param http:boolean     allow incoming HTTP traffic? True = yes False = no
+    @param ssh:boolean      allow incoming SSH traffic? True = yes False = no
+    @param https:boolean    allow incoming HTTPS traffic? True = yes False = no
+    
+    @return                 response with the security group ID and other data 
+    """
+    
     security_group = ec2.create_security_group(GroupName=groupname, Description=description)
     if http:
         security_group.authorize_ingress(IpProtocol="tcp",CidrIp="0.0.0.0/0",FromPort=80,ToPort=80)
@@ -41,6 +53,19 @@ def create_security_group(groupname, description, http=True, ssh=True, https=Tru
     return security_group
 
 def create_instances(instanceType:str, mincount:int, maxcount:int,securityGroups:"list[str]"):
+    """
+    Create maxcount instances, and at least mincount instances if not possible, with instanceType specifying the type
+    of machine to be created and securityGroups specifying the security groups of each instance. The operating system
+    will be ubuntu. The script USER_DATA will be executed on each instance once it's running.
+
+    @param instanceType:str         type of instance, specifies the available CPU, memory, etc. ex. t2.micro
+    @param mincount:int             create at least this many instances
+    @param maxcount:int             try to create this many instances
+    @param securityGroups:list[str] security groups ids to be applied ['sg-id1', 'sg-id2']
+
+    @return                         response containing the instance IDs and other data 
+    """
+
     instances = ec2.create_instances(
         ImageId='ami-08c40ec9ead489470',
         MinCount=mincount,
@@ -50,8 +75,6 @@ def create_instances(instanceType:str, mincount:int, maxcount:int,securityGroups
         UserData=USER_DATA,
         SecurityGroupIds=securityGroups
     )
-    # global VPC_ID
-    # VPC_ID = boto3.client("ec2",REGION_NAME).describe_instances()['Reservations'][0]['Instances'][0]['VpcId']
     i = 0
     for instance in instances:
         ec2.create_tags(Resources=[instance.id], Tags=[
@@ -63,7 +86,17 @@ def create_instances(instanceType:str, mincount:int, maxcount:int,securityGroups
         i += 1
     return instances
 
-def create_cluster_target_group(name, instances, vpcId):
+def create_cluster_target_group(name:str, instances:"list[str]", vpcId:str):
+    """
+    Creates a target group that contains all the instances specified in instances in the virtual private cloud
+    with id = vpcId; by default there is only one VPC. The protocol used is HTTP (targets receives traffic on port
+    80)
+    @param name:str             name of the target group to be created
+    @param instances:list[str]  list of the instance ids to be included in that group ['i-id1', 'i-id2']
+    @param vpcId:str            id of the Virtual Private Cloud
+
+    @return:                    response containing the target group, response of registering targets, target group ARN
+    """
     group = elb.create_target_group(
         Name=name,
         Protocol='HTTP',
@@ -79,7 +112,16 @@ def create_cluster_target_group(name, instances, vpcId):
     response = elb.register_targets(TargetGroupArn=arn, Targets=targets)
     return group, response, arn
 
-def create_load_balancer(name, securityGroupIDs):
+def create_load_balancer(name:str, securityGroupIDs:"list[str]"):
+    """
+    creates an internet facing application load balancer with Name=name and the security groups specified in securityGroupIDs
+    the subnets used will be by default us-east-1a and us-east-1b as specified in SUBNETS. IpV4 is used for IP.
+    
+    @param name: str                    the name of the load balancer
+    @param securityGroupIDs: list[str]  the list of security group IDs (['sg-id1', sg-'id2'])
+    
+    @return:                            response containing the balancer arn and other data
+    """
     balancer = elb.create_load_balancer(
         Name=name,
         Subnets=[
@@ -93,7 +135,17 @@ def create_load_balancer(name, securityGroupIDs):
     )
     return balancer
 
-def attach_target_group_to_load_balancer(loadBalancerArn, targetGroupArn, port):
+def attach_target_group_to_load_balancer(loadBalancerArn:str, targetGroupArn:str, port:int):
+    """
+    attaches target group with ARN = targetGroupArn to load balancer with ARN = loadBalancerArn
+    the load balancer will listen on Port = port
+    
+    @param loadBalancerArn:str  ARN of the load balancer
+    @param targetGroupArn:str   ARN of the target group
+    @param port:int             Port on which the listener will listen
+    
+    @return: response after creating the listener
+    """
     response = elb.create_listener(
         DefaultActions=[
             {
@@ -107,7 +159,17 @@ def attach_target_group_to_load_balancer(loadBalancerArn, targetGroupArn, port):
     )
     return response
 
-def wait_for_flask(instances):
+def wait_for_flask(instances:"list[str]"):
+    """
+    Wait for all instances specified in instances to deploy flask. This works by sending GET requests to each instance
+    until all instances return a valid response code (>=200 and < 300).
+
+    @params instances:list[str] Ids of instances to wait on ['i-id1', 'i-id2']
+
+    @return                     None
+    """
+    
+    
     # since connection.request can throw an error, this will mimick an connection object
     # and allow the operation connection.getresponse().code
     # not used anywhere except here
@@ -143,7 +205,16 @@ def wait_for_flask(instances):
         if all_ready:
             break
 
-def getIpPolicy(port):
+def getIpPolicy(port:int):
+    """
+    Helper function for security group, gets an IP policy that uses the Port=port for TCP. CidrIp = 0.0.0.0/0 means that
+    this can receive / send traffic from / to the whole internet (receiving if used for authorize_ingress, sending if 
+    used for authorize_egress)
+
+    @param port:int Port that we want to use for TCP
+
+    @return         IP policy with the specified port 
+    """
     return {
         'FromPort': port,
         'IpProtocol': 'tcp',
@@ -156,7 +227,19 @@ def getIpPolicy(port):
         'ToPort': port,
     }
 
-def create_security_group_elb(groupname, description, listening_ports, dest_ports):
+def create_security_group_elb(groupname:str, description:str, listening_ports:"list[int]", dest_ports:"list[int]"):
+    """
+    Creates a security group for an internet facing application load balancer that can receive traffic and send traffic
+    on specified ports.
+
+    @param groupname:str                Name of the security group
+    @param description:str              Description of the security group
+    @param listening_ports:"list[int]"  Ports of the load balancer listener; inbound traffic can be sent to these ports
+    @param dest_ports:"list[int]"       Ports of the instance listeners; outbound traffic can be sent to these ports
+
+    @return                             Response containing the ID of the security group and other data
+    """
+    
     security_group = ec2.create_security_group(GroupName=groupname, Description=description)
     
     # send to every destination on port 80
