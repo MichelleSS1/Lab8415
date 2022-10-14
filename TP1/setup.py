@@ -52,18 +52,18 @@ def create_security_group(groupname:str, description:str, http=True, ssh=True, h
         security_group.authorize_ingress(IpProtocol="tcp",CidrIp="0.0.0.0/0",FromPort=443,ToPort=443)
     return security_group
 
-def create_instances(instanceType:str, mincount:int, maxcount:int,securityGroups:"list[str]"):
+def create_instances(instanceType:str, mincount:int, maxcount:int,security_groups:"list[str]"):
     """
     Create maxcount instances, and at least mincount instances if not possible, with instanceType specifying the type
-    of machine to be created and securityGroups specifying the security groups of each instance. The operating system
+    of machine to be created and security_groups specifying the security groups of each instance. The operating system
     will be ubuntu. The script USER_DATA will be executed on each instance once it's running.
 
-    @param instanceType:str         type of instance, specifies the available CPU, memory, etc. ex. t2.micro
-    @param mincount:int             create at least this many instances
-    @param maxcount:int             try to create this many instances
-    @param securityGroups:list[str] security groups ids to be applied ['sg-id1', 'sg-id2']
+    @param instanceType:str             type of instance, specifies the available CPU, memory, etc. ex. t2.micro
+    @param mincount:int                 create at least this many instances
+    @param maxcount:int                 try to create this many instances
+    @param security_groups:list[str]    security groups ids to be applied ['sg-id1', 'sg-id2']
 
-    @return                         response containing the instance IDs and other data 
+    @return                             response containing the instance IDs and other data 
     """
 
     instances = ec2.create_instances(
@@ -73,7 +73,7 @@ def create_instances(instanceType:str, mincount:int, maxcount:int,securityGroups
         InstanceType=instanceType,
         KeyName=KEY_NAME,
         UserData=USER_DATA,
-        SecurityGroupIds=securityGroups
+        SecurityGroupIds=security_groups
     )
     i = 0
     for instance in instances:
@@ -86,14 +86,14 @@ def create_instances(instanceType:str, mincount:int, maxcount:int,securityGroups
         i += 1
     return instances
 
-def create_cluster_target_group(name:str, instances:"list[str]", vpcId:str):
+def create_cluster_target_group(name:str, instances:"list[str]", vpc_Id:str):
     """
     Creates a target group that contains all the instances specified in instances in the virtual private cloud
-    with id = vpcId; by default there is only one VPC. The protocol used is HTTP (targets receives traffic on port
+    with id = vpc_Id; by default there is only one VPC. The protocol used is HTTP (targets receives traffic on port
     80)
     @param name:str             name of the target group to be created
     @param instances:list[str]  list of the instance ids to be included in that group ['i-id1', 'i-id2']
-    @param vpcId:str            id of the Virtual Private Cloud
+    @param vpc_Id:str           id of the Virtual Private Cloud
 
     @return:                    response containing the target group, response of registering targets, target group ARN
     """
@@ -103,7 +103,7 @@ def create_cluster_target_group(name:str, instances:"list[str]", vpcId:str):
         Port=80,
         TargetType='instance',
         IpAddressType='ipv4',
-        VpcId=vpcId
+        VpcId=vpc_Id
     )
     arn = group["TargetGroups"][0]['TargetGroupArn']
     targets = []
@@ -112,15 +112,15 @@ def create_cluster_target_group(name:str, instances:"list[str]", vpcId:str):
     response = elb.register_targets(TargetGroupArn=arn, Targets=targets)
     return group, response, arn
 
-def create_load_balancer(name:str, securityGroupIDs:"list[str]"):
+def create_load_balancer(name:str, security_group_IDs:"list[str]"):
     """
-    creates an internet facing application load balancer with Name=name and the security groups specified in securityGroupIDs
+    creates an internet facing application load balancer with Name=name and the security groups specified in security_group_IDs
     the subnets used will be by default us-east-1a and us-east-1b as specified in SUBNETS. IpV4 is used for IP.
     
-    @param name: str                    the name of the load balancer
-    @param securityGroupIDs: list[str]  the list of security group IDs (['sg-id1', sg-'id2'])
+    @param name: str                        the name of the load balancer
+    @param security_group_IDs: list[str]    the list of security group IDs (['sg-id1', sg-'id2'])
     
-    @return:                            response containing the balancer arn and other data
+    @return:                                response containing the balancer arn and other data
     """
     balancer = elb.create_load_balancer(
         Name=name,
@@ -131,29 +131,29 @@ def create_load_balancer(name:str, securityGroupIDs:"list[str]"):
         Scheme='internet-facing',
         Type='application',
         IpAddressType='ipv4',
-        SecurityGroups=securityGroupIDs
+        SecurityGroups=security_group_IDs
     )
     return balancer
 
-def attach_target_group_to_load_balancer(loadBalancerArn:str, targetGroupArn:str, port:int):
+def attach_target_group_to_load_balancer(load_balancer_arn:str, target_group_arn:str, port:int):
     """
-    attaches target group with ARN = targetGroupArn to load balancer with ARN = loadBalancerArn
+    attaches target group with ARN = target_group_arn to load balancer with ARN = load_balancer_arn
     the load balancer will listen on Port = port
     
-    @param loadBalancerArn:str  ARN of the load balancer
-    @param targetGroupArn:str   ARN of the target group
-    @param port:int             Port on which the listener will listen
+    @param load_balancer_arn:str    ARN of the load balancer
+    @param target_group_arn:str     ARN of the target group
+    @param port:int                 Port on which the listener will listen
     
     @return: response after creating the listener
     """
     response = elb.create_listener(
         DefaultActions=[
             {
-                'TargetGroupArn': targetGroupArn,
+                'TargetGroupArn': target_group_arn,
                 'Type': 'forward',
             },
         ],
-        LoadBalancerArn=loadBalancerArn,
+        LoadBalancerArn=load_balancer_arn,
         Port=port,
         Protocol='HTTP',
     )
@@ -205,7 +205,7 @@ def wait_for_flask(instances:"list[str]"):
         if all_ready:
             break
 
-def getIpPolicy(port:int):
+def get_ip_policy(port:int):
     """
     Helper function for security group, gets an IP policy that uses the Port=port for TCP. CidrIp = 0.0.0.0/0 means that
     this can receive / send traffic from / to the whole internet (receiving if used for authorize_ingress, sending if 
@@ -246,13 +246,13 @@ def create_security_group_elb(groupname:str, description:str, listening_ports:"l
     egress_IpPermissions=[]
     for port in dest_ports:
         egress_IpPermissions.append(
-            getIpPolicy(port)
+            get_ip_policy(port)
         )
     # everyone can send us stuff on the following listening ports
     ingress_IpPermissions=[]
     for port in listening_ports:
         ingress_IpPermissions.append(
-            getIpPolicy(port)
+            get_ip_policy(port)
         )
 
     security_group.authorize_ingress(
