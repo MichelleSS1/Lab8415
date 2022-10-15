@@ -38,6 +38,7 @@ def delete_security_group(groupname:str):
     """
     return ec2.delete_security_group(GroupName=groupname, DryRun=False)
 
+
 def delete_load_balancer(loadbalancername:str):
     """
     Deletes the specified load balancer.
@@ -47,6 +48,25 @@ def delete_load_balancer(loadbalancername:str):
     """
     return ec2.delete_load_balancer(LoadBalancerName=loadbalancername)
 
+
+def delete_target_group(targetgrouparn:str):
+    """
+    Deletes the specified target group..
+
+    @param targetgrouparn:str    The Amazon Resource Name (ARN) of the target group.
+    @return: dict
+    """
+    return elb.delete_load_balancer(TargetGroupArn=targetgrouparn)
+
+
+def delete_target_group(targetgrouparn:str):
+    """
+    Deletes the specified target group..
+
+    @param targetgrouparn:str    The Amazon Resource Name (ARN) of the target group.
+    @return: dict
+    """
+    return elb.delete_load_balancer(TargetGroupArn=targetgrouparn)
 
 
 # def create_security_group(groupname:str, description:str, http=True, ssh=True, https=True):
@@ -352,3 +372,5 @@ delete_security_group("test 2")
 print("delete load balancer: ")
 delete_security_group("my-load-balancer")
 
+print("delete target group: ")
+delete_security_group("target-cluster-1")
