@@ -7,7 +7,7 @@ check_aws_var() {
     var_name=$1
 
     # Check if variable was set by user doing aws configure
-    value=$(aws configure get ${var_name})
+    value=$(aws configure get "${var_name}")
 
     # If variable not set by cli
     if [ -z "${value}" ]
@@ -19,7 +19,7 @@ check_aws_var() {
         then
             # If variable not available in environment,
             # take its value from user input and export it for scripts
-            read -p "Don't worry! Enter ${var_name} : " answer
+            read -r -p "Don't worry! Enter ${var_name} : " answer
             export "${var_name}"="${answer}"
         else 
             echo "It seems you have set the environment variable ${var_name}. Good job!"
@@ -28,16 +28,16 @@ check_aws_var() {
 }
 
 # Loop through the array AWS_ENV_VAR
-for env_var in ${AWS_ENV_VAR[@]}
+for env_var in "${AWS_ENV_VAR[@]}"
 do
-    check_aws_var $env_var
+    check_aws_var "$env_var"
 done
 
 # Check if a session_token is needed
 answer=''
 while [ "${answer,,}" != "y" ] && [ "${answer,,}" != "n" ]
 do
-    read -p "Are you using temporary credentials and need a session token ? [y/N] " answer
+    read -r -p "Are you using temporary credentials and need a session token ? [y/N] " answer
 done
 
 if [ "${answer,,}" == "y" ]
