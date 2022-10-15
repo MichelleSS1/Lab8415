@@ -159,14 +159,14 @@ def attach_target_group_to_load_balancer(load_balancer_arn:str, target_group_arn
     )
     return response
 
-def wait_for_flask(instances:"list[str]"):
+def wait_for_flask(instances:"list[ec2.Instance]"):
     """
     Wait for all instances specified in instances to deploy flask. This works by sending GET requests to each instance
     until all instances return a valid response code (>=200 and < 300).
 
-    @params instances:list[str] Ids of instances to wait on ['i-id1', 'i-id2']
+    @params instances:list[Instance]    A list of ec2.Instance objects
 
-    @return                     None
+    @return                             None
     """
     
     
