@@ -2,9 +2,6 @@
 
 # You should have aws cli installed for this script to work.
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
-
 # Make sure neccessary information to connect to AWS is available
 AWS_ENV_VAR=("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_DEFAULT_REGION")
 
