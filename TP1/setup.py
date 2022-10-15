@@ -38,6 +38,16 @@ def delete_security_group(groupname:str):
     """
     return ec2.delete_security_group(GroupName=groupname, DryRun=False)
 
+def delete_load_balancer(loadbalancername:str):
+    """
+    Deletes the specified load balancer.
+
+    @param loadbalancername:str    The name associated with the load balancer.
+    @return:dict.
+    """
+    return ec2.delete_load_balancer(LoadBalancerName=loadbalancername)
+
+
 
 # def create_security_group(groupname:str, description:str, http=True, ssh=True, https=True):
 #     """
@@ -339,4 +349,6 @@ def delete_security_group(groupname:str):
 print("delete security group: ")
 delete_security_group("test 2")
 
+print("delete load balancer: ")
+delete_security_group("my-load-balancer")
 
