@@ -59,14 +59,14 @@ def delete_target_group(targetgrouparn:str):
     return elb.delete_load_balancer(TargetGroupArn=targetgrouparn)
 
 
-def delete_target_group(targetgrouparn:str):
+def terminate_instances(instanceIds:"list[str]"):
     """
-    Deletes the specified target group..
+    Shuts down one or more instances. This operation is idempotent; if you terminate an instance more than once, each call succeeds.
 
-    @param targetgrouparn:str    The Amazon Resource Name (ARN) of the target group.
+    @param instanceIds:list    One or more instance IDs.
     @return: dict
     """
-    return elb.delete_load_balancer(TargetGroupArn=targetgrouparn)
+    print (ec2.terminate_instances(InstanceIds=instanceIds))
 
 
 # def create_security_group(groupname:str, description:str, http=True, ssh=True, https=True):
@@ -374,3 +374,6 @@ delete_security_group("my-load-balancer")
 
 print("delete target group: ")
 delete_security_group("target-cluster-1")
+
+print("terminate instances ")
+terminate_instances(["t1-micro-0","t1-micro-1","t2-micro-0" ])
