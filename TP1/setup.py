@@ -27,6 +27,48 @@ elb = boto3.client("elbv2", region_name=REGION_NAME)
 ec2client = boto3.client('ec2', region_name=REGION_NAME)
 SUBNETS = ec2client.describe_subnets()['Subnets']
 
+
+def delete_security_group(groupid:str):
+    """
+    Delete a security group from your account.
+
+    @param groupid:str    id of the security group
+    @return                 True if successful.
+    """
+
+    return ec2client.delete_security_group(GroupId=groupid)
+
+
+def delete_load_balancer(loadbalancerarn:str):
+    """
+    Deletes the specified load balancer.
+
+    @param loadbalancerarn:str    The name associated with the load balancer.
+    @return:dict.
+    """
+    return elb.delete_load_balancer(LoadBalancerArn=loadbalancerarn)
+
+
+def delete_target_group(targetgrouparn:str):
+    """
+    Deletes the specified target group..
+
+    @param targetgrouparn:str    The Amazon Resource Name (ARN) of the target group.
+    @return: dict
+    """
+    return elb.delete_target_group(TargetGroupArn=targetgrouparn)
+
+
+def terminate_instances(instanceIds:"list[str]"):
+    """
+    Shuts down one or more instances. This operation is idempotent; if you terminate an instance more than once, each call succeeds.
+
+    @param instanceIds:list    One or more instance IDs.
+    @return: dict
+    """
+    return ec2client.terminate_instances(InstanceIds=instanceIds)
+
+
 def create_security_group(groupname:str, description:str, http=True, ssh=True, https=True):
     """
     creates a security group for instances with GroupName = groupname, Description = description. The parameters http, 
@@ -323,5 +365,23 @@ print("wait until flask has been deployed on all machines:")
 t = time()
 wait_for_flask(all_instances)
 print("total wait time:", time() - t, "seconds")
+
+
+# Tear down
+print("delete load balancer: ")
+delete_load_balancer(balancer_arn)
+
+print("delete target group: ")
+delete_target_group(target_arn1)
+delete_target_group(target_arn2)
+
+print("terminate instances ")
+terminate_instances(instanceIDs1)
+terminate_instances(instanceIDs2)
+
+print("delete security group: ")
+delete_security_group(group.id)
+delete_security_group(elb_sec_group.id)
+
 
 
