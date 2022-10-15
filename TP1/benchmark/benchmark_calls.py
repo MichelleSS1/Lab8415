@@ -104,4 +104,7 @@ if __name__ == '__main__':
     for thread in threads:
         thread.join()
 
+    # Wait a minute for the instances to process all requests
+    sleep(60)
+    
     print("Completed tests!")

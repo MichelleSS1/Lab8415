@@ -2,6 +2,8 @@
 
 # You should have aws cli installed for this script to work.
 
+# Exit immediately if a command exits with a non-zero status.
+set -e
 
 # Make sure neccessary information to connect to AWS is available
 AWS_ENV_VAR=("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_DEFAULT_REGION")
@@ -52,13 +54,22 @@ echo ""
 echo "Hey champion, now that we have what we need to connect to AWS, we can setup the infrastructure!"
 
 # Install python dependencies
-# pip install -r requirements.txt
+pip install -r requirements.txt
+
+# Setup infra
+python3 infra/setup_infra.py
 
 # Set load balancer DNS name 
-# LB_DNS_NAME=$(python setup_infra.py) #check how to get that
+LB_DNS_NAME=$(cat ./infra/lb_dns_name.txt) 
 
 # Run a container for tests and make load balancer DNS name available in container for calls
 #
 # `docker build -q` outputs nothing but the final image hash
 # Adding --rm to docker run to make the container be removed automatically when it exits.
-# docker run --rm -it $(docker build -q .) -e LB_DNS_NAME=${LB_DNS_NAME}
+docker run --rm -it $(docker build -q ./benchmark) -e LB_DNS_NAME=${LB_DNS_NAME}
+
+# Get metrics and save diagrams images ?
+# 
+
+# Teardown of the infrastructure
+python3 infra/teardown_infra.py
