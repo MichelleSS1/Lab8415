@@ -28,25 +28,25 @@ ec2client = boto3.client('ec2', region_name=REGION_NAME)
 SUBNETS = ec2client.describe_subnets()['Subnets']
 
 
-def delete_security_group(groupname:str):
+def delete_security_group(groupid:str):
     """
     Delete a security group from your account.
 
-    @param groupname:str    name of the security group
-    @param DryRun    Set to True if the operation should not actually run.
+    @param groupid:str    id of the security group
     @return                 True if successful.
     """
-    return ec2.delete_security_group(GroupName=groupname, DryRun=False)
+
+    return ec2client.delete_security_group(GroupId=groupid)
 
 
-def delete_load_balancer(loadbalancername:str):
+def delete_load_balancer(loadbalancerarn:str):
     """
     Deletes the specified load balancer.
 
-    @param loadbalancername:str    The name associated with the load balancer.
+    @param loadbalancerarn:str    The name associated with the load balancer.
     @return:dict.
     """
-    return ec2.delete_load_balancer(LoadBalancerName=loadbalancername)
+    return elb.delete_load_balancer(LoadBalancerArn=loadbalancerarn)
 
 
 def delete_target_group(targetgrouparn:str):
@@ -56,7 +56,7 @@ def delete_target_group(targetgrouparn:str):
     @param targetgrouparn:str    The Amazon Resource Name (ARN) of the target group.
     @return: dict
     """
-    return elb.delete_load_balancer(TargetGroupArn=targetgrouparn)
+    return elb.delete_target_group(TargetGroupArn=targetgrouparn)
 
 
 def terminate_instances(instanceIds:"list[str]"):
@@ -66,8 +66,14 @@ def terminate_instances(instanceIds:"list[str]"):
     @param instanceIds:list    One or more instance IDs.
     @return: dict
     """
-    print (ec2.terminate_instances(InstanceIds=instanceIds))
+    return ec2client.terminate_instances(InstanceIds=instanceIds)
 
+
+def delete_vpc(vpcid:str):
+    """
+
+    """
+    return ec2client.delete_vpc(VpcId=vpcid)
 
 # def create_security_group(groupname:str, description:str, http=True, ssh=True, https=True):
 #     """
@@ -285,13 +291,11 @@ def terminate_instances(instanceIds:"list[str]"):
 #     security_group = ec2.create_security_group(GroupName=groupname, Description=description)
     
 #     # send to every destination on port 80
-#     egress_IpPermissions=[]
 #     for port in dest_ports:
 #         egress_IpPermissions.append(
 #             get_ip_policy(port)
 #         )
 #     # everyone can send us stuff on the following listening ports
-#     ingress_IpPermissions=[]
 #     for port in listening_ports:
 #         ingress_IpPermissions.append(
 #             get_ip_policy(port)
@@ -366,14 +370,24 @@ def terminate_instances(instanceIds:"list[str]"):
 # wait_for_flask(all_instances)
 # print("total wait time:", time() - t, "seconds")
 
+
+# print("delete load balancer: ")
+# delete_load_balancer(balancer_arn)
+
+# print("delete target group: ")
+# delete_target_group(target_arn1)
+# delete_target_group(target_arn2)
+
+# print("terminate instances ")
+# terminate_instances(InstanceIDs1)
+# terminate_instances(InstanceIds2)
+
 print("delete security group: ")
-delete_security_group("test 2")
 
-print("delete load balancer: ")
-delete_security_group("my-load-balancer")
+delete_security_group(group.id)
+delete_security_group(elb_sec_group.id)
 
-print("delete target group: ")
-delete_security_group("target-cluster-1")
 
-print("terminate instances ")
-terminate_instances(["t1-micro-0","t1-micro-1","t2-micro-0" ])
+print("delete VPC ")
+print(delete_vpc("vpc-06b14c2f1ac02af80"))
+
