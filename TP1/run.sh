@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# You should have aws cli installed for this script to work.
+
+
 # Make sure neccessary information to connect to AWS is available
 AWS_ENV_VAR=("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_DEFAULT_REGION")
 
