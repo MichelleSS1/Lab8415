@@ -27,6 +27,7 @@ check_aws_var() {
             echo "It seems you have set the environment variable ${var_name}. Good job!"
         fi
     fi
+    echo ""
 }
 
 # Loop through the array AWS_ENV_VAR
