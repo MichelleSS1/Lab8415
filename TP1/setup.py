@@ -367,6 +367,7 @@ wait_for_flask(all_instances)
 print("total wait time:", time() - t, "seconds")
 
 
+# Tear down
 print("delete load balancer: ")
 delete_load_balancer(balancer_arn)
 
