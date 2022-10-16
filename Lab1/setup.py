@@ -1,3 +1,4 @@
+import base64
 import boto3
 import http.client
 
@@ -24,6 +25,7 @@ REGION_NAME = 'us-east-1'
 VPC_ID = None
 ec2 = boto3.resource('ec2', region_name=REGION_NAME)
 elb = boto3.client("elbv2", region_name=REGION_NAME)
+autoscaling = boto3.client('autoscaling', region_name=REGION_NAME)
 ec2client = boto3.client('ec2', region_name=REGION_NAME)
 SUBNETS = ec2client.describe_subnets()['Subnets']
 
@@ -167,8 +169,8 @@ def create_load_balancer(name:str, security_group_IDs:"list[str]"):
     balancer = elb.create_load_balancer(
         Name=name,
         Subnets=[
-            SUBNETS[0]['SubnetId'],
-            SUBNETS[1]['SubnetId']
+            SUBNETS[len(SUBNETS) - 1]['SubnetId'],
+            SUBNETS[len(SUBNETS) - 2]['SubnetId']
         ],
         Scheme='internet-facing',
         Type='application',
@@ -201,14 +203,14 @@ def attach_target_group_to_load_balancer(load_balancer_arn:str, target_group_arn
     )
     return response
 
-def wait_for_flask(instances:"list[str]"):
+def wait_for_flask(instances:"list[ec2.Instance]"):
     """
     Wait for all instances specified in instances to deploy flask. This works by sending GET requests to each instance
     until all instances return a valid response code (>=200 and < 300).
 
-    @params instances:list[str] Ids of instances to wait on ['i-id1', 'i-id2']
+    @params instances:list[Instance]    A list of ec2.Instance objects
 
-    @return                     None
+    @return                             None
     """
     
     
@@ -305,83 +307,184 @@ def create_security_group_elb(groupname:str, description:str, listening_ports:"l
     )
     return security_group
 
-print("create security group: ")
-group = create_security_group("test 2", "test 2")
-print("done")
+def create_launch_template(launch_template_name:str, instance_type:str, security_group_ids:"list[str]"):
+    """
+    Creates a launch template
+
+    @param launch_template_name:str     name of the launch template
+    @param instance_type:str            type of instance to be launched
+    @param security_group_ids:list[str] security group ids of the instances to be launched
+
+    @return                             response containing template name, version and other data
+    """
+    return ec2client.create_launch_template(
+        LaunchTemplateName=launch_template_name,
+        LaunchTemplateData={
+            'InstanceType': instance_type,
+            'ImageId': 'ami-08c40ec9ead489470',
+            'UserData': base64.b64encode(bytes(USER_DATA, 'utf-8')).decode("ascii"),
+            'KeyName':KEY_NAME,
+            'SecurityGroupIds':security_group_ids
+        },
+    )
+
+def create_autoscaling_group(
+    groupname:str,
+    mincount:int,
+    maxcount:int,
+    target_group_arn:"list[str]",
+    availability_zones:"list[str]",
+    template_name:str,
+    template_version:int
+    ):
+    """
+    Create an auto scaling group.
+
+    @param groupname:str                name of the auto scaling group to be created
+    @param mincount:int                 minimum number of instances
+    @param maxcount:int                 maximum number of instances
+    @param target_group_arn:list[str]   target group to be associated to this auto scaling group
+    @param availability_zones:list[str] availability zones, normally only one
+    @param template_name:str            name of the launch template
+    @param template_version:int         version of the launch template
+
+    @return                             response containing the ID of the autoscaling group
+    """
+    return autoscaling.create_auto_scaling_group(
+        AutoScalingGroupName=groupname,
+        MinSize=mincount,
+        MaxSize=maxcount,
+        LaunchTemplate={ 'LaunchTemplateName': template_name, 'Version': str(template_version)},
+        AvailabilityZones=availability_zones,
+        TargetGroupARNs=target_group_arn
+    )
+
+"""
+WARNING
+WARNING
+
+---- NE PAS UTILSIER T1.MICRO AVEC US-EAST-1
 
 
-print("create instances group 1: ")
-instances1 = create_instances("t1.micro",4,4,[group.id])
-instanceIDs1 = [instance.id for instance in instances1]
-print("done")
+"""
 
-print("create instances group 2: ")
-instances2 = create_instances("t2.micro",4,4,[group.id])
-instanceIDs2 = [instance.id for instance in instances2]
-print("done")
 
-all_instances = instances1 + instances2
+SETUP = True
+if SETUP:
+    print("create security group: ")
+    group = create_security_group("test 2", "test 2")
+    print("done")
 
-print("wait all of them are in a running state")
-waiter = ec2client.get_waiter('instance_running')
-all_instances_IDs = instanceIDs1 + instanceIDs2
-waiter.wait(InstanceIds=all_instances_IDs)
-print("done")
+    N_TYPE1 = 4
+    N_TYPE2 = 5
 
-print("reload all instances")
-for instance in all_instances:
-    instance.reload()
-print("done")
+    print("create instances group 1: ")
+    instances1 = create_instances("t1.micro",N_TYPE1,N_TYPE1,[group.id])
+    instanceIDs1 = [instance.id for instance in instances1]
+    print("done")
 
-VPC_ID = boto3.client("ec2",REGION_NAME).describe_vpcs()['Vpcs'][0]['VpcId']
+    print("create instances group 2: ")
+    instances2 = create_instances("t2.micro",N_TYPE2,N_TYPE2,[group.id])
+    instanceIDs2 = [instance.id for instance in instances2]
+    print("done")
 
-print("create target groups 1: ")
-target_group1, attach_succeeded1, target_arn1 = create_cluster_target_group("target-cluster-1", instanceIDs1, VPC_ID)
-print("done")
+    all_instances = instances1 + instances2
 
-print("create target groups 2: ")
-target_group2, attach_succeeded2, target_arn2 = create_cluster_target_group("target-cluster-2", instanceIDs2, VPC_ID)
-print("done")
+    print("wait all of them are in a running state")
+    waiter = ec2client.get_waiter('instance_running')
+    all_instances_IDs = instanceIDs1 + instanceIDs2
+    waiter.wait(InstanceIds=all_instances_IDs)
+    print("done")
 
-print("creating security group for the load balancer")
-elb_sec_group = create_security_group_elb("elbSecurityGroup", "securituy group for ELB", [8080, 8000], [80])
-print("done")
+    print("reload all instances")
+    for instance in all_instances:
+        instance.reload()
+    print("done")
 
-print("create load balancer: ")
-balancer = create_load_balancer("my-load-balancer", [elb_sec_group.id])
-balancer_arn = balancer['LoadBalancers'][0]['LoadBalancerArn']
-print("done")
+    VPC_ID = boto3.client("ec2",REGION_NAME).describe_vpcs()['Vpcs'][0]['VpcId']
 
-print("attach target1")
-attach_target_group_to_load_balancer(balancer_arn, target_arn1, 8080)
-print("done")
+    print("create target groups 1: ")
+    target_group1, attach_succeeded1, target_arn1 = create_cluster_target_group("target-cluster-1", instanceIDs1, VPC_ID)
+    print("done")
 
-print("attach target 2")
-attach_target_group_to_load_balancer(balancer_arn, target_arn2, 8000)
-print("done")
-from time import time
+    print("create target groups 2: ")
+    target_group2, attach_succeeded2, target_arn2 = create_cluster_target_group("target-cluster-2", instanceIDs2, VPC_ID)
+    print("done")
 
-print("wait until flask has been deployed on all machines:")
-t = time()
-wait_for_flask(all_instances)
-print("total wait time:", time() - t, "seconds")
+    print("creating security group for the load balancer")
+    elb_sec_group = create_security_group_elb("elbSecurityGroup", "securituy group for ELB", [8080, 8000], [80])
+    print("done")
 
+    print("create load balancer: ")
+    balancer = create_load_balancer("my-load-balancer", [elb_sec_group.id])
+    balancer_arn = balancer['LoadBalancers'][0]['LoadBalancerArn']
+    print("done")
+
+    print("attach target1")
+    attach_target_group_to_load_balancer(balancer_arn, target_arn1, 8080)
+    print("done")
+
+    print("attach target 2")
+    attach_target_group_to_load_balancer(balancer_arn, target_arn2, 8000)
+    print("done")
+    from time import time
+
+    print("wait until flask has been deployed on all machines:")
+    t = time()
+    wait_for_flask(all_instances)
+    print("total wait time:", time() - t, "seconds")
+
+
+    print("creating launch template for group 1")
+    template1 = create_launch_template("template1", "t1.micro", [group.id])
+    print("done")
+
+    print("creating launch template for group 2")
+    template2 = create_launch_template("template2", "t2.micro", [group.id])
+    print("done")
+
+    print("creating scaling group for group 1")
+    scaling_group_1 = create_autoscaling_group(
+        "group1",
+        1, N_TYPE1,
+        [target_arn1],
+        [SUBNETS[len(SUBNETS) - 1]['AvailabilityZone']],
+        template1['LaunchTemplate']['LaunchTemplateName'],
+        template1['LaunchTemplate']['DefaultVersionNumber'])
+    print("done")
+
+    print("creating scaling group for group 2")
+    scaling_group_2 = create_autoscaling_group(
+        "group2",
+        1, N_TYPE2,
+        [target_arn2],
+        [SUBNETS[len(SUBNETS) - 2]['AvailabilityZone']],
+        template2['LaunchTemplate']['LaunchTemplateName'],
+        template2['LaunchTemplate']['DefaultVersionNumber'])
+    print("done")
+
+    input("press enter to tear down: ")
+    input("are you sure?")
 
 # Tear down
 print("delete load balancer: ")
 delete_load_balancer(balancer_arn)
-
-print("delete target group: ")
-delete_target_group(target_arn1)
-delete_target_group(target_arn2)
+print("done")
 
 print("terminate instances ")
 terminate_instances(instanceIDs1)
 terminate_instances(instanceIDs2)
+print("done")
+
+print("delete target group: ")
+delete_target_group(target_arn1)
+delete_target_group(target_arn2)
+print("done")
+
 
 print("delete security group: ")
 delete_security_group(group.id)
 delete_security_group(elb_sec_group.id)
-
+print("done")
 
 
