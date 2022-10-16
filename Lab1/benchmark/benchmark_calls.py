@@ -103,4 +103,7 @@ if __name__ == '__main__':
     for thread in threads:
         thread.join()
 
+    # Wait for most metrics to be available before eexiting
+    sleep(120)
+
     print("Completed tests!")

@@ -119,7 +119,7 @@ def delete_rule(rule_arn:str):
     """
     Deletes the specified rule.
 
-    @param rule_arn:str    The arn associated with the rule.
+    @param rule_arn:str             The arn associated with the rule.
     @return:dict.
     """
     print("Deleting rule ", rule_arn)

@@ -95,8 +95,8 @@ def setup_instances(vpc_id:str, subnet1_id:str, subnet2_id:str, infra_info:Infra
     wait_for_flask(all_instances)
     print("done")
 
-    attach_succeeded1, target1_arn = create_cluster("target-cluster-1", instances_m4_ids, vpc_id)
-    attach_succeeded2, target2_arn = create_cluster("target-cluster-2", instances_t2_ids, vpc_id)
+    has_succeeded1, target1_arn = create_cluster("target-cluster-1", instances_m4_ids, vpc_id)
+    has_succeeded2, target2_arn = create_cluster("target-cluster-2", instances_t2_ids, vpc_id)
 
     infra_info.target_groups_arn.extend([target1_arn, target2_arn])
 

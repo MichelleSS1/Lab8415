@@ -20,9 +20,9 @@ def create_ubuntu_instances(
     will be ubuntu. The script user_data will be executed on each instance once it's running. 
     They will be located in subnet whose id is subnet_id.
 
-    @param instance_type:str             type of instance, specifies the available CPU, memory, etc. ex. t2.micro
-    @param min_count:int                 create at least this many instances
-    @param max_count:int                 try to create this many instances
+    @param instance_type:str            type of instance, specifies the available CPU, memory, etc. ex. t2.micro
+    @param min_count:int                create at least this many instances
+    @param max_count:int                try to create this many instances
     @param key_name:str                 the name of the key pair used to connect to the instances
     @param user_data:str                script to be executed on startup
     @param subnet_id                    subnet where the machines will be located
@@ -64,7 +64,7 @@ def create_cluster(name:str, instances_ids:"list[str]", vpc_id:str):
     @param instances_ids:list[str]  list of the instance ids to be included in that group ['i-id1', 'i-id2']
     @param vpc_id:str               id of the Virtual Private Cloud
 
-    @return:                    response containing the target group, response of registering targets, target group ARN
+    @return:                        response of registering targets, target group ARN
     """
     print("Creating target group: ", name)
 
