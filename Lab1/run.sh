@@ -24,10 +24,10 @@ check_aws_var() {
             read -r -p "Don't worry! Enter ${var_name} : " answer
             export "${var_name}"="${answer}"
         else 
-            echo "It seems you have set the environment variable ${var_name}. Good job!"
+            printf "It seems you have set the environment variable ${var_name}. Good job!\n"
         fi
     fi
-    echo ""
+    printf "\n"
 }
 
 # Loop through the array AWS_ENV_VAR
@@ -48,13 +48,11 @@ then
     check_aws_var AWS_SESSION_TOKEN
 fi
 
-echo ""
-echo "Hey champion, now that we have what we need to connect to AWS, we can setup the infrastructure!"
-echo ""
+printf "\nHey champion, now that we have what we need to connect to AWS, we can setup the infrastructure!\n\n"
 
 # Install python dependencies
 pip install -r requirements.txt
-echo ""
+printf "\n"
 
 # Setup infra
 # teardown created infra if setup fails and exit
