@@ -1,7 +1,6 @@
 import boto3
 
-# TODO: Correct case styling
-ec2client = boto3.client('ec2') 
+ec2_client = boto3.client('ec2') 
 ec2 = boto3.resource('ec2')
 elb = boto3.client("elbv2")
 
@@ -56,14 +55,14 @@ def create_ubuntu_instances(
     print("done")
     return instances
 
-def create_cluster(name:str, instances:"list[str]", vpc_id:str):
+def create_cluster(name:str, instances_ids:"list[str]", vpc_id:str):
     """
     Creates a target group that contains all the instances specified in instances in the virtual private cloud
     with id = vpc_id; by default there is only one VPC. The protocol used is HTTP (targets receives traffic on port
     80)
-    @param name:str             name of the target group to be created
-    @param instances:list[str]  list of the instance ids to be included in that group ['i-id1', 'i-id2']
-    @param vpc_id:str           id of the Virtual Private Cloud
+    @param name:str                 name of the target group to be created
+    @param instances_ids:list[str]  list of the instance ids to be included in that group ['i-id1', 'i-id2']
+    @param vpc_id:str               id of the Virtual Private Cloud
 
     @return:                    response containing the target group, response of registering targets, target group ARN
     """
@@ -81,20 +80,45 @@ def create_cluster(name:str, instances:"list[str]", vpc_id:str):
     arn = group["TargetGroups"][0]['TargetGroupArn']
     targets = []
 
-    for instance in instances:
+    for instance in instances_ids:
         targets.append({"Id":instance})
     response = elb.register_targets(TargetGroupArn=arn, Targets=targets)
 
     print("done")
     return response, arn 
 
-# TODO: Correct case styling
-def terminate_instances(instanceIds:"list[str]"):
+def get_stopped_instances_ids(instances_ids:list[str]):
+    """
+    Retrieve instances whose state is 'shutting-down' | 'terminated' | 'stopping' | 'stopped'.
+
+    @param instances_ids:list[str]     List of instances ids among which to look
+
+    @return                            Found ids
+    """
+    stopped_instances_ids = []
+    instances_to_remove = ec2_client.describe_instances(
+        Filters=[
+            {
+                'Name': 'instance-state-name',
+                'Values': [
+                    'shutting-down', 'terminated', 'stopping', 'stopped'
+                ]
+            }, 
+        ],
+        InstanceIds=instances_ids
+    )['Reservations']
+    if (len(instances_to_remove) > 0):
+        instances_to_remove = instances_to_remove[0]['Instances']
+        stopped_instances_ids = [instance['InstanceId'] for instance in instances_to_remove]
+
+    return stopped_instances_ids
+
+def terminate_instances(instance_ids:"list[str]"):
     """
     Shuts down one or more instances. This operation is idempotent; if you terminate an instance more than once, each call succeeds.
 
-    @param instanceIds:list    One or more instance IDs.
+    @param instance_ids:list    One or more instance IDs.
     @return: dict
     """
     print("Terminating instances")
-    return ec2client.terminate_instances(InstanceIds=instanceIds)
+    return ec2_client.terminate_instances(InstanceIds=instance_ids)

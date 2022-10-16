@@ -1,9 +1,9 @@
-from dataclasses import dataclass
-from time import time
 import boto3
-import http.client
-from ipaddress import IPv4Network
 import pickle
+import http.client
+from time import time
+from dataclasses import dataclass
+from ipaddress import IPv4Network
 
 
 ec2_client = boto3.client('ec2')
@@ -27,13 +27,16 @@ def get_key_pair_name():
 
 def get_vpc_id():
     """
-    Returns a Virtual Private Cloud ID.
+    Returns the default Virtual Private Cloud ID.
     """
     vpcs = ec2_client.describe_vpcs()['Vpcs']
     selected_vpc = ''
 
     if (len(vpcs) > 0):
-        selected_vpc = vpcs[0]['VpcId']
+        for vpc in vpcs:
+            if vpc['IsDefault']:
+                selected_vpc = vpc['VpcId']
+                return selected_vpc
     else:
         # Create a vpc if we don't already have one
         selected_vpc = ec2_client.create_vpc(CidrBlock='172.31.0.0/16')['Vpc']['VpcId']
@@ -97,17 +100,18 @@ def wait_for_flask(instances:"list[ec2.Instance]"):
     # stay in the while loop as long as all the instances don't return a response
     # with 200 something (2XX = request is a success so flask is running)
     while (len(ips_to_test) > 0):
-        connections = [http.client.HTTPConnection(ip) for ip in ips_to_test]
-        for i in range(len(connections)):
+        print()
+        remaining_ips = list(ips_to_test)
+        for ip in remaining_ips:
             try:
-                connections[i].request('GET', '/')
+                connection = http.client.HTTPConnection(ip).request('GET', '/')
             except:
-                # Not ready
+                # Instance not ready
                 pass
             else:
-                code = connections[i].getresponse().code
+                code = connection.getresponse().code
                 if (code >= 200 and code < 300):
-                    ips_to_test.pop(i)        
+                    ips_to_test.remove(ip)
 
     print("total wait time:", time() - t, "seconds")
 
@@ -134,13 +138,14 @@ def get_ip_policy(port:int):
         'ToPort': port,
     }
 
-def create_security_group(group_name:str, description:str, listening_ports:"list[int]", dest_ports:"list[int]"):
+def create_security_group(group_name:str, description:str, vpc_id:str, listening_ports:"list[int]", dest_ports:"list[int]"):
     """
     Creates a security group for an internet facing application load balancer that can receive traffic and send traffic
     on specified ports.
 
-    @param group_name:str                Name of the security group
+    @param group_name:str               Name of the security group
     @param description:str              Description of the security group
+    @param vpc_id:str                   Virtual Private Cloud ID where to create security_group
     @param listening_ports:"list[int]"  Ports of the load balancer listener; inbound traffic can be sent to these ports
     @param dest_ports:"list[int]"       Ports of the instance listeners; outbound traffic can be sent to these ports
 
@@ -148,40 +153,44 @@ def create_security_group(group_name:str, description:str, listening_ports:"list
     """
     print("Creating security group: ", group_name)
 
-    security_group = ec2.create_security_group(GroupName=group_name, Description=description)
+    security_group = ec2.create_security_group(GroupName=group_name, Description=description, VpcId=vpc_id)
     
-    # send to every destination on port 80
-    egress_IpPermissions=[]
-    for port in dest_ports:
-        egress_IpPermissions.append(
-            get_ip_policy(port)
-        )
-    # everyone can send us stuff on the following listening ports
-    ingress_IpPermissions=[]
-    for port in listening_ports:
-        ingress_IpPermissions.append(
-            get_ip_policy(port)
+    if (len(listening_ports) > 0):
+        # everyone can send us stuff on the following listening ports
+        ingress_IpPermissions=[]
+        for port in listening_ports:
+            ingress_IpPermissions.append(
+                get_ip_policy(port)
+            )
+
+        security_group.authorize_ingress(
+            IpPermissions=ingress_IpPermissions
         )
 
-    security_group.authorize_ingress(
-        IpPermissions=ingress_IpPermissions
-    )
-    security_group.authorize_egress(
-        IpPermissions=egress_IpPermissions
-    )
+    if (len(dest_ports) > 0):
+        # send to every destination on port 80
+        egress_IpPermissions=[]
+        for port in dest_ports:
+            egress_IpPermissions.append(
+                get_ip_policy(port)
+            )
+
+        security_group.authorize_egress(
+            IpPermissions=egress_IpPermissions
+        )
 
     print("done")
     return security_group
 
-def delete_security_group(groupid:str):
+def delete_security_group(group_id:str):
     """
     Delete a security group from your account.
 
-    @param groupid:str    id of the security group
+    @param group_id:str    id of the security group
     @return                 True if successful.
     """
-    print("Deleting security group: ")
-    return ec2_client.delete_security_group(GroupId=groupid)
+    print("Deleting security group: ", group_id)
+    return ec2_client.delete_security_group(GroupId=group_id)
 
 @dataclass
 class InfraInfo:

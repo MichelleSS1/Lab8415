@@ -50,12 +50,15 @@ fi
 
 echo ""
 echo "Hey champion, now that we have what we need to connect to AWS, we can setup the infrastructure!"
+echo ""
 
 # Install python dependencies
 pip install -r requirements.txt
+echo ""
 
 # Setup infra
-python3 infra/setup_infra.py
+# teardown created infra if setup fails and exit
+python3 infra/setup_infra.py || python3 infra/teardown_infra.py; exit 1
 
 # Set load balancer DNS name 
 LB_DNS_NAME=$(cat ./infra/lb_dns_name.txt) 
@@ -66,7 +69,7 @@ LB_DNS_NAME=$(cat ./infra/lb_dns_name.txt)
 # Adding --rm to docker run to make the container be removed automatically when it exits.
 docker run --rm -it $(docker build -q ./benchmark) -e LB_DNS_NAME=${LB_DNS_NAME}
 
-# Get metrics and save diagrams images ?
+# Get metrics and save diagrams ?
 # 
 
 # Teardown of the infrastructure

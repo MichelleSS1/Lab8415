@@ -54,22 +54,22 @@ def attach_target_group_to_load_balancer(load_balancer_arn:str, target_group_arn
 
     return response
 
-def delete_load_balancer(loadbalancerarn:str):
+def delete_load_balancer(load_balancer_arn:str):
     """
     Deletes the specified load balancer.
 
-    @param loadbalancerarn:str    The name associated with the load balancer.
+    @param load_balancer_arn:str    The name associated with the load balancer.
     @return:dict.
     """
-    print("Deleting load balancer ", loadbalancerarn)
-    return elb.delete_load_balancer(LoadBalancerArn=loadbalancerarn)
+    print("Deleting load balancer ", load_balancer_arn)
+    return elb.delete_load_balancer(LoadBalancerArn=load_balancer_arn)
 
-def delete_target_group(targetgrouparn:str):
+def delete_target_group(target_group_arn:str):
     """
     Deletes the specified target group..
 
-    @param targetgrouparn:str    The Amazon Resource Name (ARN) of the target group.
+    @param target_group_arn:str    The Amazon Resource Name (ARN) of the target group.
     @return: dict
     """
-    print("Deleting target group ", targetgrouparn)
-    return elb.delete_target_group(TargetGroupArn=targetgrouparn)
+    print("Deleting target group ", target_group_arn)
+    return elb.delete_target_group(TargetGroupArn=target_group_arn)

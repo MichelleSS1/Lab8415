@@ -1,7 +1,9 @@
+import os
+import sys
 from time import sleep
-from infra.instance import terminate_instances
-from infra.load_balancer import delete_load_balancer, delete_target_group
-from infra.utils import delete_security_group, get_infra_info
+from instance import terminate_instances
+from load_balancer import delete_load_balancer, delete_target_group
+from utils import delete_security_group, get_infra_info
 
 
 def teardown_infra(infra_info_path:str):
@@ -22,16 +24,20 @@ def teardown_infra(infra_info_path:str):
     for tg_arn in infra_info.target_groups_arn:
         delete_target_group(tg_arn)
 
-    terminate_instances(infra_info.instances_ids)
+    if (len(infra_info.instances_ids) > 0):
+        terminate_instances(infra_info.instances_ids)
+        # Wait for instances to terminate before deleting security group
+        sleep(120)
 
     for sec_gp in infra_info.security_groups_ids:
-        delete_security_group(sec_gp)
-
-    # Just to have more time for teardown ?
-    sleep(60)
+        try:
+            delete_security_group(sec_gp)
+        except:
+            sleep(60)
+            delete_security_group(sec_gp)
 
     print("Teardown complete")
 
 
 if __name__ == '__main__':
-    teardown_infra('./infra_info')
+    teardown_infra(os.path.join(sys.path[0],'./infra_info'))
