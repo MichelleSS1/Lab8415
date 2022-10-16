@@ -56,7 +56,7 @@ printf "\n"
 
 # Setup infra
 # teardown created infra if setup fails and exit
-python3 infra/setup_infra.py || python3 infra/teardown_infra.py; exit 1
+python3 infra/setup_infra.py || (python3 infra/teardown_infra.py; exit 1)
 
 # Set load balancer DNS name 
 LB_DNS_NAME=$(cat ./infra/lb_dns_name.txt) 

@@ -17,11 +17,8 @@ def call_endpoint(path:str):
     '''
 
     url = LB_DNS_NAME + path
-    headers = {
-        'content-type': 'application/json'
-    }
 
-    res = requests.get(url, headers=headers)
+    res = requests.get(url)
 
     print(f'Code : {res.status_code}, Text: {res.text}')
 
