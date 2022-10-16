@@ -103,7 +103,8 @@ def wait_for_flask(instances:"list[ec2.Instance]"):
         remaining_ips = list(ips_to_test)
         for ip in remaining_ips:
             try:
-                connection = http.client.HTTPConnection(ip).request('GET', '/')
+                connection = http.client.HTTPConnection(ip)
+                connection.request('GET', '/')
             except:
                 # Instance not ready
                 pass
