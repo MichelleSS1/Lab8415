@@ -100,7 +100,6 @@ def wait_for_flask(instances:"list[ec2.Instance]"):
     # stay in the while loop as long as all the instances don't return a response
     # with 200 something (2XX = request is a success so flask is running)
     while (len(ips_to_test) > 0):
-        print()
         remaining_ips = list(ips_to_test)
         for ip in remaining_ips:
             try:
