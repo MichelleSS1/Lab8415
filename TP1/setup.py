@@ -455,7 +455,7 @@ if SETUP:
 
     print("creating scaling group for group 2")
     scaling_group_2 = create_autoscaling_group(
-        "group1",
+        "group2",
         1, N_TYPE2,
         [target_arn2],
         [SUBNETS[len(SUBNETS) - 2]['AvailabilityZone']],
