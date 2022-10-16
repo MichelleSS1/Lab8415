@@ -1,3 +1,3 @@
 # Lab8415
 
-The entry point is the script run.sh
+Lab 1 : the entry point is the script run.sh
