@@ -65,7 +65,8 @@ LB_DNS_NAME=$(cat ./infra/lb_dns_name.txt)
 #
 # `docker build -q` outputs nothing but the final image hash
 # Adding --rm to docker run to make the container be removed automatically when it exits.
-docker run --rm -it $(docker build -q ./benchmark) -e LB_DNS_NAME=${LB_DNS_NAME}
+printf "\nStarting docker container for benchmark\n\n"
+docker run --rm -it -e LB_DNS_NAME=${LB_DNS_NAME} $(docker build -q ./benchmark)
 
 # Get metrics and save diagrams ?
 # 
