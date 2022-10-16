@@ -198,9 +198,11 @@ class InfraInfo:
     Class to store infra details
     """
     security_groups_ids: list[str]
+    # Won't be necessary
     instances_ids: list[str]
     target_groups_arn: list[str]
     load_balancers_arn: list[str]
+    rules_arn: list[str]
 
 def save_infra_info(infra_info:InfraInfo, path:str):
     """

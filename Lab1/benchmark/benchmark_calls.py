@@ -4,8 +4,7 @@ from time import sleep
 import requests
 
 # Load balancer DNS name to use in the url
-#LB_DNS_NAME = os.environ.get('LB_DNS_NAME')
-LB_DNS_NAME = ""
+LB_DNS_NAME = "http://" + os.environ.get('LB_DNS_NAME')
 
 CLUSTER1_PATH = '/cluster1'
 CLUSTER2_PATH = '/cluster2'
@@ -24,7 +23,7 @@ def call_endpoint(path:str):
 
     res = requests.get(url, headers=headers)
 
-    print(f'Code : {res.status_code}, Text: {res.json()}')
+    print(f'Code : {res.status_code}, Text: {res.text}')
 
 
 def make_calls(nb:int, path:str):
@@ -104,7 +103,4 @@ if __name__ == '__main__':
     for thread in threads:
         thread.join()
 
-    # Wait a minute for the instances to process all requests
-    sleep(60)
-    
     print("Completed tests!")

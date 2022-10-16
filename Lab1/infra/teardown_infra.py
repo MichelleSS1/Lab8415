@@ -2,7 +2,7 @@ import os
 import sys
 from time import sleep
 from instance import terminate_instances
-from load_balancer import delete_load_balancer, delete_target_group
+from load_balancer import delete_load_balancer, delete_rule, delete_target_group
 from utils import delete_security_group, get_infra_info
 
 
@@ -18,12 +18,17 @@ def teardown_infra(infra_info_path:str):
 
     infra_info = get_infra_info(infra_info_path)
 
+    for rule_arn in infra_info.rules_arn:
+        delete_rule(rule_arn)
+
     for lb_arn in infra_info.load_balancers_arn:
         delete_load_balancer(lb_arn)
+    sleep(60)
 
     for tg_arn in infra_info.target_groups_arn:
         delete_target_group(tg_arn)
 
+    # Get instances dynamically
     if (len(infra_info.instances_ids) > 0):
         terminate_instances(infra_info.instances_ids)
         # Wait for instances to terminate before deleting security group

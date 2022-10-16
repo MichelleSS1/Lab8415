@@ -13,7 +13,7 @@ def create_load_balancer(name:str, security_group_ids:"list[str]", subnet_ids:"l
 
     @return:                                response containing the balancer arn and other data
     """
-    print("Creating load balancer: ")
+    print("Creating load balancer and listener")
 
     load_balancer = elb.create_load_balancer(
         Name=name,
@@ -27,42 +27,103 @@ def create_load_balancer(name:str, security_group_ids:"list[str]", subnet_ids:"l
     print("done")
     return load_balancer['LoadBalancers'][0]
 
-def attach_target_group_to_load_balancer(load_balancer_arn:str, target_group_arn:str, port:int):
+def create_forward_listener(load_balancer_arn:str, port:int, target1_arn:str, target2_arn:str):
     """
-    attaches target group with ARN = target_group_arn to load balancer with ARN = load_balancer_arn
-    the load balancer will listen on Port = port
+    Create a listener on load balancer with ARN = load_balancer_arn,
+    the listener will be on Port = port and forward to two target groups
     
     @param load_balancer_arn:str    ARN of the load balancer
-    @param target_group_arn:str     ARN of the target group
     @param port:int                 Port on which the listener will listen
-    
-    @return: response after creating the listener
+    @param target1_arn:str          First target group arn
+    @param target2_arn:str          Second target group arn
+
+    @return:                        ARN of the created listener
     """
-    print(f"Attaching target group {target_group_arn} to loadbalancer {load_balancer_arn}")
+    print(f"Creating forward listener on load balancer {load_balancer_arn} on port {port}")
 
     response = elb.create_listener(
         DefaultActions=[
             {
-                'TargetGroupArn': target_group_arn,
                 'Type': 'forward',
-            },
+                'ForwardConfig': {
+                    'TargetGroups': [
+                        {
+                            'TargetGroupArn': target1_arn,
+                            'Weight': 50
+                        },
+                        {
+                            'TargetGroupArn': target2_arn,
+                            'Weight': 50
+                        },
+                    ],
+                },
+            }
         ],
         LoadBalancerArn=load_balancer_arn,
         Port=port,
         Protocol='HTTP',
     )
 
-    return response
+    print("done")
+    return response['Listeners'][0]['ListenerArn']
+
+def attach_target_group_to_listener(listener_arn:str, target_group_arn:str, path:str, priority:int):
+    """
+    attaches target group with ARN = target_group_arn to listener with ARN = listener_arn,
+    the listener will forward to target group for specified path
+    
+    @param listener_arn:str         ARN of the listener
+    @param target_group_arn:str     ARN of the target group
+    @param path:str                 Path on which the listener will forward to target group
+    @param priority:int             Rule priority
+    
+    @return:                        arn of rule created
+    """
+    print(f"Attaching target group {target_group_arn} to listener {listener_arn}")
+
+    response = elb.create_rule(
+        ListenerArn=listener_arn,
+        Conditions=[
+            {
+                'Field': 'path-pattern',
+                'PathPatternConfig': {
+                    'Values': [
+                        path
+                    ]
+                },
+            },
+        ],
+        Priority=priority,
+        Actions=[
+            {
+                'Type': 'forward',
+                'TargetGroupArn': target_group_arn,
+            }
+        ]
+    )
+
+    print("done")
+    return response['Rules'][0]['RuleArn']
 
 def delete_load_balancer(load_balancer_arn:str):
     """
     Deletes the specified load balancer.
 
-    @param load_balancer_arn:str    The name associated with the load balancer.
+    @param load_balancer_arn:str    The arn associated with the load balancer.
     @return:dict.
     """
     print("Deleting load balancer ", load_balancer_arn)
     return elb.delete_load_balancer(LoadBalancerArn=load_balancer_arn)
+
+def delete_rule(rule_arn:str):
+    """
+    Deletes the specified rule.
+
+    @param rule_arn:str    The arn associated with the rule.
+    @return:dict.
+    """
+    print("Deleting rule ", rule_arn)
+    return elb.delete_rule(RuleArn=rule_arn)
 
 def delete_target_group(target_group_arn:str):
     """

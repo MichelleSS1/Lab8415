@@ -2,7 +2,7 @@ import os
 import sys
 from time import sleep
 import boto3
-from load_balancer import attach_target_group_to_load_balancer, create_load_balancer
+from load_balancer import attach_target_group_to_listener, create_forward_listener, create_load_balancer
 from utils import InfraInfo, create_security_group, get_key_pair_name, get_subnets, get_vpc_id, save_infra_info, wait_for_flask
 from instance import create_cluster, create_ubuntu_instances, get_stopped_instances_ids
 
@@ -102,25 +102,30 @@ def setup_instances(vpc_id:str, subnet1_id:str, subnet2_id:str, infra_info:Infra
 
     return infra_info
 
-def setup_load_balancer(subnet_ids:list[str], target1_arn:str, target2_arn:str, infra_info:InfraInfo):
+def setup_load_balancer(vpc_id:str, subnet_ids:list[str], target1_arn:str, target2_arn:str, infra_info:InfraInfo):
     """
     Create load balancer and attach target groups to it.
 
+    @param vpc_id:str             id of the Virtual Private Cloud
     @param subnet_ids:list[str]   subnets where the load balancer will access target groups
     @param target1_arn:str        first target group arn
     @param target2_arn:str        second target group arn
 
     @returns                      object containing infrastructure information, load balancer dns name
     """
-    elb_sec_group = create_security_group("lb_sec_group", "securituy group for ELB", [HTTP_PORT], [HTTP_PORT])
+    elb_sec_group = create_security_group("lb_sec_group", "securituy group for ELB", vpc_id, [HTTP_PORT], [HTTP_PORT])
     infra_info.security_groups_ids.append(elb_sec_group.id)
     
     load_balancer = create_load_balancer("lab1-load-balancer", [elb_sec_group.id], subnet_ids)
     load_balancer_arn = load_balancer['LoadBalancerArn']
     infra_info.load_balancers_arn.append(load_balancer_arn)
 
-    attach_target_group_to_load_balancer(load_balancer_arn, target1_arn, HTTP_PORT)
-    attach_target_group_to_load_balancer(load_balancer_arn, target2_arn, HTTP_PORT)
+    listener_arn = create_forward_listener(load_balancer_arn, HTTP_PORT, target1_arn, target2_arn)
+
+    rule_arn = attach_target_group_to_listener(listener_arn, target1_arn, '/cluster1', priority=1)
+    infra_info.rules_arn.append(rule_arn)
+    rule_arn = attach_target_group_to_listener(listener_arn, target2_arn, '/cluster2', priority=2)
+    infra_info.rules_arn.append(rule_arn)
 
     return infra_info, load_balancer['DNSName']
 
@@ -135,11 +140,18 @@ if __name__ == '__main__':
     load_balancer_dns_name = ''
 
     # Necessary information to teardown infra
-    infra_info = InfraInfo(security_groups_ids=[], instances_ids=[], target_groups_arn=[], load_balancers_arn=[])
+    infra_info = InfraInfo(
+        security_groups_ids=[], 
+        instances_ids=[], 
+        target_groups_arn=[], 
+        load_balancers_arn=[],
+        rules_arn=[]
+    )
 
     try:
         infra_info = setup_instances(vpc_id, subnet1_id, subnet2_id, infra_info)
         elb_sec_group, load_balancer_dns_name = setup_load_balancer(
+            vpc_id,
             [subnet1_id, subnet2_id], 
             infra_info.target_groups_arn[0], 
             infra_info.target_groups_arn[1],
@@ -155,12 +167,5 @@ if __name__ == '__main__':
         if (len(load_balancer_dns_name) > 0):
             with open(os.path.join(sys.path[0],'./lb_dns_name.txt'), 'w') as f:
                 f.write(load_balancer_dns_name)
-
-    # infra_info = InfraInfo(
-    #     security_groups_ids=[sec_group.id, elb_sec_group.id],
-    #     instances_ids=instances_ids,
-    #     target_groups_arn=[target1_arn, target2_arn],
-    #     load_balancers_arn=[load_balancer['LoadBalancerArn']]
-    # )
 
     print("Infrastructure setup complete")
