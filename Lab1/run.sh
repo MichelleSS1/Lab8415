@@ -91,7 +91,7 @@ docker image rm log8415_lab1
 printf "\n"
 
 # Get metrics and plot them
-python benchmark/get_metrics.py
+python benchmark/benchmark_metrics.py
 
 # Teardown of the infrastructure
 python infra/teardown_infra.py
