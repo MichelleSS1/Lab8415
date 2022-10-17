@@ -128,5 +128,8 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Log8415 lab1
 plots/
 metrics.csv
+infra_info
+lb_dns_name.txt
