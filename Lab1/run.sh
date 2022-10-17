@@ -48,25 +48,42 @@ then
     check_aws_var AWS_SESSION_TOKEN
 fi
 
-printf "\nHey champion, now that we have what we need to connect to AWS, we can setup the infrastructure!\n\n"
+printf "Hey champion, now that we have what we need to connect to AWS, we can setup the infrastructure!\n\n"
 
 # Install python dependencies
 pip install -r requirements.txt
 printf "\n"
 
 # Setup infra
-# teardown created infra if setup fails and exit
-python3 infra/setup_infra.py || (python3 infra/teardown_infra.py; exit 1)
+python3 infra/setup_infra.py
+
+# Teardown created infra if setup fails then exit
+# $? is the exit code of the last executed command
+if [ "$?" != "0" ]
+then
+    python3 infra/teardown_infra.py
+    exit 1
+fi
+printf "\n"
 
 # Set load balancer DNS name 
 LB_DNS_NAME=$(cat ./infra/lb_dns_name.txt) 
 
+# Build docker image for bechmark tests
+printf "Building docker image for benchmark\n\n"
+docker build -q ./benchmark -t log8415_lab1
+printf "\n"
+
 # Run a container for tests and make load balancer DNS name available in container for calls
-#
-# `docker build -q` outputs nothing but the final image hash
 # Adding --rm to docker run to make the container be removed automatically when it exits.
-printf "\nStarting docker container for benchmark\n\n"
-docker run --rm -it -e LB_DNS_NAME=${LB_DNS_NAME} $(docker build -q ./benchmark)
+printf "Starting docker container for benchmark\n\n"
+docker run --rm -it -e LB_DNS_NAME="${LB_DNS_NAME}" log8415_lab1
+printf "\n"
+
+# Delete docker image
+printf "Deleting docker image\n"
+docker image rm log8415_lab1
+printf "\n"
 
 # Get metrics and save diagrams ?
 # 

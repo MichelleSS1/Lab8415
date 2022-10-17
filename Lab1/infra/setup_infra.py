@@ -4,7 +4,7 @@ from time import sleep
 import boto3
 from load_balancer import attach_target_group_to_listener, create_forward_listener, create_load_balancer
 from utils import InfraInfo, create_security_group, get_key_pair_name, get_subnets, get_vpc_id, save_infra_info, wait_for_flask
-from instance import create_cluster, create_ubuntu_instances, get_stopped_instances_ids
+from instance import create_cluster, create_ubuntu_instances, stopped_instances_ids
 
 
 elb = boto3.client("elbv2")
@@ -25,7 +25,7 @@ def setup_instances(vpc_id:str, subnet1_id:str, subnet2_id:str, infra_info:Infra
     @returns                        object containing infrastructure information
     """
     user_data = ''
-    with open(os.path.join(sys.path[0], './start_flask_app.sh')) as f:
+    with open(os.path.join(sys.path[0], 'start_flask_app.sh')) as f:
         user_data = f.read()
     
     user_data_gp1 = user_data.replace('<target_group>', '1')
@@ -36,6 +36,7 @@ def setup_instances(vpc_id:str, subnet1_id:str, subnet2_id:str, infra_info:Infra
     sec_group = create_security_group("instances_sec_group", "Security group Lab1", vpc_id, [HTTP_PORT, SSH_PORT], [])
     infra_info.security_groups_ids.append(sec_group.id)
     
+    tags = {'Purpose': 'log8415_lab1'}
     instances_m4 = create_ubuntu_instances(
         "m4.large", 
         4, 
@@ -43,7 +44,8 @@ def setup_instances(vpc_id:str, subnet1_id:str, subnet2_id:str, infra_info:Infra
         key_name, 
         user_data_gp1, 
         subnet1_id, 
-        [sec_group.id]
+        [sec_group.id],
+        tags
     )
     instances_t2 = create_ubuntu_instances(
         "t2.large", 
@@ -52,19 +54,20 @@ def setup_instances(vpc_id:str, subnet1_id:str, subnet2_id:str, infra_info:Infra
         key_name, 
         user_data_gp2, 
         subnet2_id, 
-        [sec_group.id]
+        [sec_group.id],
+        tags
     )
     
     all_instances = instances_m4 + instances_t2
     all_instances_ids = [instance.id for instance in all_instances]
 
-    infra_info.instances_ids.extend(all_instances_ids)
+    infra_info.instances_tags.update(tags)
 
     print("Waiting for all of them to be in a running state")
     sleep(60)
     
     # Remove terminating/stopping instances
-    all_instances_ids = [id for id in all_instances_ids if id not in get_stopped_instances_ids(all_instances_ids)]
+    all_instances_ids = [id for id in all_instances_ids if id not in stopped_instances_ids(all_instances_ids)]
 
     running_instances_m4 = []
     running_instances_t2 = []
@@ -127,6 +130,12 @@ def setup_load_balancer(vpc_id:str, subnet_ids:list[str], target1_arn:str, targe
     rule_arn = attach_target_group_to_listener(listener_arn, target2_arn, '/cluster2', priority=2)
     infra_info.rules_arn.append(rule_arn)
 
+    print("Waiting for load balancer to be available")
+    sleep(60)
+    waiter = elb.get_waiter('load_balancer_available')
+    waiter.wait(LoadBalancerArns=[load_balancer_arn])
+    print("done")
+
     return infra_info, load_balancer['DNSName']
 
 
@@ -142,7 +151,7 @@ if __name__ == '__main__':
     # Necessary information to teardown infra
     infra_info = InfraInfo(
         security_groups_ids=[], 
-        instances_ids=[], 
+        instances_tags={},
         target_groups_arn=[], 
         load_balancers_arn=[],
         rules_arn=[]
@@ -161,11 +170,11 @@ if __name__ == '__main__':
         raise
     finally:
         # Save it to a file for later use
-        save_infra_info(infra_info, os.path.join(sys.path[0],'./infra_info'))
+        save_infra_info(infra_info, os.path.join(sys.path[0], 'infra_info'))
 
         # Write load balancer dns name to a file for later use
         if (len(load_balancer_dns_name) > 0):
-            with open(os.path.join(sys.path[0],'./lb_dns_name.txt'), 'w') as f:
+            with open(os.path.join(sys.path[0], 'lb_dns_name.txt'), 'w') as f:
                 f.write(load_balancer_dns_name)
 
     print("Infrastructure setup complete")

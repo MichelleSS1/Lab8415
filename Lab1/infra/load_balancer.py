@@ -113,7 +113,13 @@ def delete_load_balancer(load_balancer_arn:str):
     @return:dict.
     """
     print("Deleting load balancer ", load_balancer_arn)
-    return elb.delete_load_balancer(LoadBalancerArn=load_balancer_arn)
+    response = elb.delete_load_balancer(LoadBalancerArn=load_balancer_arn)
+
+    # Wait for the load balancer to be deleted
+    waiter = elb.get_waiter('load_balancers_deleted')
+    waiter.wait(LoadBalancerArns=[load_balancer_arn])
+
+    return response
 
 def delete_rule(rule_arn:str):
     """

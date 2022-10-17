@@ -12,7 +12,8 @@ def create_ubuntu_instances(
     key_name:str, 
     user_data:str, 
     subnet_id:str, 
-    security_groups:"list[str]"
+    security_groups:"list[str]",
+    tags:dict[str, str]
 ):
     """
     Create max_count instances, and at least min_count instances if not possible, with instance_type specifying the type
@@ -27,6 +28,7 @@ def create_ubuntu_instances(
     @param user_data:str                script to be executed on startup
     @param subnet_id                    subnet where the machines will be located
     @param security_groups:list[str]    security groups ids to be applied ['sg-id1', 'sg-id2']
+    @param tags:dict[str, str]          tags to put on instances
 
     @return                             response containing the instance IDs and other data 
     """
@@ -39,7 +41,19 @@ def create_ubuntu_instances(
         KeyName=key_name,
         UserData=user_data,
         SubnetId=subnet_id,
-        SecurityGroupIds=security_groups
+        SecurityGroupIds=security_groups,
+        TagSpecifications=[
+            {
+                'ResourceType': 'instance',
+                'Tags': [
+                    {
+                        'Key': key,
+                        'Value': value
+                    }
+                    for key, value in tags.items()
+                ]
+            }
+        ]
     )
 
     i = 0
@@ -47,7 +61,7 @@ def create_ubuntu_instances(
         ec2.create_tags(Resources=[instance.id], Tags=[
             {
                 'Key': 'Name',
-                'Value': instance_type.replace('.','-') + '-' + str(i),
+                'Value': instance_type.replace('.','-') + '-' + str(i)
             },
         ])
         i += 1
@@ -87,9 +101,10 @@ def create_cluster(name:str, instances_ids:"list[str]", vpc_id:str):
     print("done")
     return response, arn 
 
-def get_stopped_instances_ids(instances_ids:list[str]):
+def stopped_instances_ids(instances_ids:list[str]):
     """
-    Retrieve instances whose state is 'shutting-down' | 'terminated' | 'stopping' | 'stopped'.
+    Retrieve instances with state in 'shutting-down' | 'terminated' | 'stopping' | 'stopped'
+    among the given list of instances ids
 
     @param instances_ids:list[str]     List of instances ids among which to look
 
@@ -108,10 +123,33 @@ def get_stopped_instances_ids(instances_ids:list[str]):
         InstanceIds=instances_ids
     )['Reservations']
     if (len(instances_to_remove) > 0):
-        instances_to_remove = instances_to_remove[0]['Instances']
-        stopped_instances_ids = [instance['InstanceId'] for instance in instances_to_remove]
+        for instances_block in instances_to_remove:
+            for instance in instances_block['Instances']:
+                stopped_instances_ids.append(instance['InstanceId'])
 
     return stopped_instances_ids
+
+def get_instances_ids(filters:list[dict]):
+    """
+    Retrieve instances ids corresponding to filters.
+
+    @return                            Found ids ; all ids if filters empty
+    """
+    instances_ids = []
+
+    if (len(filters) > 0):
+        instances = ec2_client.describe_instances(
+            Filters=filters
+        )['Reservations']
+    else:
+        instances = ec2_client.describe_instances()['Reservations']
+
+    if (len(instances) > 0):
+        for instances_block in instances:
+            for instance in instances_block['Instances']:
+                instances_ids.append(instance['InstanceId'])
+
+    return instances_ids
 
 def terminate_instances(instance_ids:"list[str]"):
     """
@@ -121,4 +159,10 @@ def terminate_instances(instance_ids:"list[str]"):
     @return: dict
     """
     print("Terminating instances")
-    return ec2_client.terminate_instances(InstanceIds=instance_ids)
+    response = ec2_client.terminate_instances(InstanceIds=instance_ids)
+    
+    # Wait for instances to terminate
+    waiter = ec2_client.get_waiter('instance_terminated')
+    waiter.wait(InstanceIds=instance_ids)
+
+    return response

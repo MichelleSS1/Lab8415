@@ -9,6 +9,17 @@ from ipaddress import IPv4Network
 ec2_client = boto3.client('ec2')
 ec2 = boto3.resource('ec2')
 
+@dataclass
+class InfraInfo:
+    """
+    Class to store infra details
+    """
+    security_groups_ids: list[str]
+    instances_tags: dict[str, str]
+    target_groups_arn: list[str]
+    load_balancers_arn: list[str]
+    rules_arn: list[str]
+
 
 def get_key_pair_name():
     """
@@ -192,18 +203,6 @@ def delete_security_group(group_id:str):
     print("Deleting security group: ", group_id)
     return ec2_client.delete_security_group(GroupId=group_id)
 
-@dataclass
-class InfraInfo:
-    """
-    Class to store infra details
-    """
-    security_groups_ids: list[str]
-    # Won't be necessary
-    instances_ids: list[str]
-    target_groups_arn: list[str]
-    load_balancers_arn: list[str]
-    rules_arn: list[str]
-
 def save_infra_info(infra_info:InfraInfo, path:str):
     """
     Store infrastructure details in a file.
@@ -228,3 +227,22 @@ def get_infra_info(path:str):
         infra_info = pickle.load(f)
 
     return infra_info
+
+def filters_from_tags(tags:dict[str, str]):
+    """
+    Format tags as filters for EC2 client methods.
+
+    @param tags:dict[str, str]      Tags to format
+
+    @return                         Formated filters
+    """
+    filters = []
+    for key, value in tags.items():
+        filters.append(
+            {
+                'Name': f'tag:{key}',
+                'Values': [value]
+            }
+        )
+    
+    return filters

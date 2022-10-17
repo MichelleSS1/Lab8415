@@ -1,9 +1,9 @@
 import os
 import sys
 from time import sleep
-from instance import terminate_instances
+from instance import terminate_instances, get_instances_ids
 from load_balancer import delete_load_balancer, delete_rule, delete_target_group
-from utils import delete_security_group, get_infra_info
+from utils import delete_security_group, filters_from_tags, get_infra_info
 
 
 def teardown_infra(infra_info_path:str):
@@ -29,11 +29,12 @@ def teardown_infra(infra_info_path:str):
         delete_target_group(tg_arn)
 
     # Get instances dynamically
-    if (len(infra_info.instances_ids) > 0):
-        terminate_instances(infra_info.instances_ids)
-        # Wait for instances to terminate before deleting security group
-        sleep(120)
+    if (len(infra_info.instances_tags) > 0):
+        filters = filters_from_tags(infra_info.instances_tags)
+        instances_ids = get_instances_ids(filters)
 
+        terminate_instances(instances_ids)
+    
     for sec_gp in infra_info.security_groups_ids:
         try:
             delete_security_group(sec_gp)
@@ -45,4 +46,4 @@ def teardown_infra(infra_info_path:str):
 
 
 if __name__ == '__main__':
-    teardown_infra(os.path.join(sys.path[0],'./infra_info'))
+    teardown_infra(os.path.join(sys.path[0], 'infra_info'))

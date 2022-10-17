@@ -12,8 +12,8 @@ CLUSTER2_PATH = '/cluster2'
 
 def call_endpoint(path:str):
     '''
-    Calls (GET request) the load balancer on the given path.
-    @param path:str Path to call
+    Call (GET request) the load balancer on the given path.
+    @param path:str     Path to call
     '''
 
     url = LB_DNS_NAME + path
@@ -27,7 +27,7 @@ def make_calls(nb:int, path:str):
     '''
     Make `nb` calls sequentially to `path`.
     @param nb:int number of calls to make
-    @param path:str Path to call
+    @param path:str     Path to call
     '''
     
     for i in range(nb):
@@ -37,7 +37,7 @@ def make_calls(nb:int, path:str):
 def first_thread_calls(path:str):
     '''
     First test function (will make the first test thread).
-    @param path:str Path to call
+    @param path:str     Path to call
     '''
 
     print("Started first test thread for path :", path)
@@ -51,7 +51,7 @@ def first_thread_calls(path:str):
 def second_thread_calls(path:str):
     '''
     Second test function (will make the second test thread).
-    @param path:str Path to call
+    @param path:str     Path to call
     '''
 
     print("Started second test thread for path :", path)
@@ -71,9 +71,9 @@ def second_thread_calls(path:str):
 def create_test_threads(path:str):
     '''
     This function creates the test threads needed given the path to call.
-    @param path:str Path to call
+    @param path:str     Path to call
 
-    @returns test threads objects
+    @returns            test threads objects
     '''
 
     print("Creating test threads for path :", path)
