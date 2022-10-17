@@ -28,7 +28,7 @@ def get_key_pair_name():
     key_pairs = ec2_client.describe_key_pairs()['KeyPairs']
     selected_key_pair_name = ''
 
-    if (len(key_pairs) > 0):
+    if len(key_pairs) > 0:
         selected_key_pair_name = key_pairs[0]['KeyName']
     else:
         # Create a key pair if we don't already have one
@@ -43,7 +43,7 @@ def get_vpc_id():
     vpcs = ec2_client.describe_vpcs()['Vpcs']
     selected_vpc = ''
 
-    if (len(vpcs) > 0):
+    if len(vpcs) > 0:
         for vpc in vpcs:
             if vpc['IsDefault']:
                 selected_vpc = vpc['VpcId']
@@ -66,7 +66,7 @@ def get_subnets(vpc_id:str):
         Filters=[{'Name': 'vpc-id', 'Values': [vpc_id]}]
     )['Subnets']
 
-    if (len(subnets) == 0):
+    if len(subnets) == 0:
         # Create two subnets in vpc if none
 
         vpc_cidr = ec2_client.describe_vpcs(Filters=[{'Name': 'vpc-id', 'Values': [vpc_id]}])['Vpcs'][0]['CidrBlock']
@@ -76,7 +76,7 @@ def get_subnets(vpc_id:str):
 
         subnets.append(ec2_client.create_subnet(CidrBlock=str(vpc_subnets[0]), VpcId=vpc_id)['Subnet'])
         subnets.append(ec2_client.create_subnet(CidrBlock=str(vpc_subnets[1]), VpcId=vpc_id)['Subnet'])
-    elif (len(subnets) == 1):
+    elif len(subnets) == 1:
         # Create a 2nd subnet in vpc if only one 
 
         sn_cidr = subnets[0]['CidrBlock']
@@ -121,7 +121,7 @@ def wait_for_flask(instances:"list[ec2.Instance]"):
                 pass
             else:
                 code = connection.getresponse().code
-                if (code >= 200 and code < 300):
+                if code >= 200 and code < 300:
                     ips_to_test.remove(ip)
 
     print("total wait time:", time() - t, "seconds")
@@ -166,7 +166,7 @@ def create_security_group(group_name:str, description:str, vpc_id:str, listening
 
     security_group = ec2.create_security_group(GroupName=group_name, Description=description, VpcId=vpc_id)
     
-    if (len(listening_ports) > 0):
+    if len(listening_ports) > 0:
         # everyone can send us stuff on the following listening ports
         ingress_IpPermissions=[]
         for port in listening_ports:
@@ -178,7 +178,7 @@ def create_security_group(group_name:str, description:str, vpc_id:str, listening
             IpPermissions=ingress_IpPermissions
         )
 
-    if (len(dest_ports) > 0):
+    if len(dest_ports) > 0:
         # send to every destination on port 80
         egress_IpPermissions=[]
         for port in dest_ports:
@@ -190,7 +190,7 @@ def create_security_group(group_name:str, description:str, vpc_id:str, listening
             IpPermissions=egress_IpPermissions
         )
 
-    print("done")
+    print("done\n")
     return security_group
 
 def delete_security_group(group_id:str):

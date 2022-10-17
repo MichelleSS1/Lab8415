@@ -3,7 +3,7 @@ import sys
 from time import sleep
 import boto3
 from load_balancer import attach_target_group_to_listener, create_forward_listener, create_load_balancer
-from utils import InfraInfo, create_security_group, get_key_pair_name, get_subnets, get_vpc_id, save_infra_info, wait_for_flask
+from log8415_utils.infra_utils import InfraInfo, create_security_group, get_key_pair_name, get_subnets, get_vpc_id, save_infra_info, wait_for_flask
 from instance import create_cluster, create_ubuntu_instances, stopped_instances_ids
 
 
@@ -96,7 +96,7 @@ def setup_instances(vpc_id:str, subnet1_id:str, subnet2_id:str, infra_info:Infra
     print("done")
 
     wait_for_flask(all_instances)
-    print("done")
+    print("done\n")
 
     has_succeeded1, target1_arn = create_cluster("target-cluster-1", instances_m4_ids, vpc_id)
     has_succeeded2, target2_arn = create_cluster("target-cluster-2", instances_t2_ids, vpc_id)
@@ -134,7 +134,7 @@ def setup_load_balancer(vpc_id:str, subnet_ids:list[str], target1_arn:str, targe
     sleep(60)
     waiter = elb.get_waiter('load_balancer_available')
     waiter.wait(LoadBalancerArns=[load_balancer_arn])
-    print("done")
+    print("done\n")
 
     return infra_info, load_balancer['DNSName']
 
@@ -173,7 +173,7 @@ if __name__ == '__main__':
         save_infra_info(infra_info, os.path.join(sys.path[0], 'infra_info'))
 
         # Write load balancer dns name to a file for later use
-        if (len(load_balancer_dns_name) > 0):
+        if len(load_balancer_dns_name) > 0:
             with open(os.path.join(sys.path[0], 'lb_dns_name.txt'), 'w') as f:
                 f.write(load_balancer_dns_name)
 

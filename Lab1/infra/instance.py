@@ -66,7 +66,7 @@ def create_ubuntu_instances(
         ])
         i += 1
 
-    print("done")
+    print("done\n")
     return instances
 
 def create_cluster(name:str, instances_ids:"list[str]", vpc_id:str):
@@ -98,7 +98,7 @@ def create_cluster(name:str, instances_ids:"list[str]", vpc_id:str):
         targets.append({"Id":instance})
     response = elb.register_targets(TargetGroupArn=arn, Targets=targets)
 
-    print("done")
+    print("done\n")
     return response, arn 
 
 def stopped_instances_ids(instances_ids:list[str]):
@@ -122,7 +122,7 @@ def stopped_instances_ids(instances_ids:list[str]):
         ],
         InstanceIds=instances_ids
     )['Reservations']
-    if (len(instances_to_remove) > 0):
+    if len(instances_to_remove) > 0:
         for instances_block in instances_to_remove:
             for instance in instances_block['Instances']:
                 stopped_instances_ids.append(instance['InstanceId'])
@@ -137,14 +137,14 @@ def get_instances_ids(filters:list[dict]):
     """
     instances_ids = []
 
-    if (len(filters) > 0):
+    if len(filters) > 0:
         instances = ec2_client.describe_instances(
             Filters=filters
         )['Reservations']
     else:
         instances = ec2_client.describe_instances()['Reservations']
 
-    if (len(instances) > 0):
+    if len(instances) > 0:
         for instances_block in instances:
             for instance in instances_block['Instances']:
                 instances_ids.append(instance['InstanceId'])

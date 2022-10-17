@@ -24,7 +24,7 @@ def create_load_balancer(name:str, security_group_ids:"list[str]", subnet_ids:"l
         SecurityGroups=security_group_ids
     )
 
-    print("done")
+    print("done\n")
     return load_balancer['LoadBalancers'][0]
 
 def create_forward_listener(load_balancer_arn:str, port:int, target1_arn:str, target2_arn:str):
@@ -64,7 +64,7 @@ def create_forward_listener(load_balancer_arn:str, port:int, target1_arn:str, ta
         Protocol='HTTP',
     )
 
-    print("done")
+    print("done\n")
     return response['Listeners'][0]['ListenerArn']
 
 def attach_target_group_to_listener(listener_arn:str, target_group_arn:str, path:str, priority:int):
@@ -102,7 +102,7 @@ def attach_target_group_to_listener(listener_arn:str, target_group_arn:str, path
         ]
     )
 
-    print("done")
+    print("done\n")
     return response['Rules'][0]['RuleArn']
 
 def delete_load_balancer(load_balancer_arn:str):

@@ -100,7 +100,7 @@ if __name__ == '__main__':
     for thread in threads:
         thread.join()
 
-    # Wait for most metrics to be available before eexiting
+    print("Waiting for most metrics to be available before exit")
     sleep(120)
 
     print("Completed tests!")

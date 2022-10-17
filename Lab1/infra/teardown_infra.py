@@ -3,7 +3,7 @@ import sys
 from time import sleep
 from instance import terminate_instances, get_instances_ids
 from load_balancer import delete_load_balancer, delete_rule, delete_target_group
-from utils import delete_security_group, filters_from_tags, get_infra_info
+from log8415_utils.infra_utils import delete_security_group, filters_from_tags, get_infra_info
 
 
 def teardown_infra(infra_info_path:str):
@@ -29,7 +29,7 @@ def teardown_infra(infra_info_path:str):
         delete_target_group(tg_arn)
 
     # Get instances dynamically
-    if (len(infra_info.instances_tags) > 0):
+    if len(infra_info.instances_tags) > 0:
         filters = filters_from_tags(infra_info.instances_tags)
         instances_ids = get_instances_ids(filters)
 

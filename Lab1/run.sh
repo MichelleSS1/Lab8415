@@ -50,18 +50,23 @@ fi
 
 printf "Hey champion, now that we have what we need to connect to AWS, we can setup the infrastructure!\n\n"
 
-# Install python dependencies
+# Install python dependencies in a virtual environment
+sudo apt install python3.8-venv
+python3 -m venv venv
+. venv/bin/activate
+
 pip install -r requirements.txt
+pip install -e .
 printf "\n"
 
 # Setup infra
-python3 infra/setup_infra.py
+python infra/setup_infra.py
 
 # Teardown created infra if setup fails then exit
 # $? is the exit code of the last executed command
 if [ "$?" != "0" ]
 then
-    python3 infra/teardown_infra.py
+    python infra/teardown_infra.py
     exit 1
 fi
 printf "\n"
@@ -85,8 +90,11 @@ printf "Deleting docker image\n"
 docker image rm log8415_lab1
 printf "\n"
 
-# Get metrics and save diagrams ?
-# 
+# Get metrics and plot them
+python benchmark/get_metrics.py
 
 # Teardown of the infrastructure
-python3 infra/teardown_infra.py
+python infra/teardown_infra.py
+
+# Exit virtual environment
+deactivate
