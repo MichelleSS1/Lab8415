@@ -43,14 +43,14 @@ def collect_lb_metric_data(id:str, metric_name:str, target_group:str, load_balan
                         'Namespace': 'AWS/ApplicationELB',
                         'MetricName': metric_name,
                         'Dimensions': [
-                                {
-                                    'Name':'TargetGroup',
-                                    'Value':target_group
-                                },
-                                {
-                                    'Name':'LoadBalancer',
-                                    'Value':load_balancer
-                                },
+                            {
+                                'Name': 'TargetGroup',
+                                'Value': target_group
+                            },
+                            {
+                                'Name': 'LoadBalancer',
+                                'Value': load_balancer
+                            },
                         ]
                     },        
                     'Period': 60,
