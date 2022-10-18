@@ -4,6 +4,8 @@
 \usepackage{fullpage}
 \usepackage{graphicx}
 \usepackage{pythonhighlight}
+\usepackage{listings}
+
 
 \def\titre{}
 \def\auteur{}
@@ -18,6 +20,18 @@
 
 \begin{document}
 \maketitle
+\section{Flask deployment}
+
+\paragraph{Deployment on LINUX (EC2 instances)}\mbox{}\\
+On each instance, the flask app is deployed when the instance is in a running state. The python application is created in the directory home/ubuntu/flask-server after installing a python virtual environment and flask. The application runs on 0.0.0.0 at port 80. The bash script to be executed in each instance is contained in a python file (app\_cluster1.py and app\_cluster2.py). For machines in the cluster 1, the app will route the requests to the URL /cluster1, and for machines in cluster 2, the app will route the requests to the URL /cluster2. A health check can be performed by sending a request without a path, and the response returned will be
+\begin{lstlisting}[language=C]
+Healthy!
+\end{lstlisting}
+If the URL path contains either /cluster1 or /cluster2, the resonse returned will be
+\begin{lstlisting}[language=C]
+Instance {AWS_INSTANCE_ID} is responding now!
+\end{lstlisting}
+Where AWS\_INSTANCE\_ID is the ID of the instance that responded to the request.
 
 \section{Infrastructure setup}
 

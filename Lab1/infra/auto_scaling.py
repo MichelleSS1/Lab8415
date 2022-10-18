@@ -9,7 +9,7 @@ def create_autoscaling_group(
     target_group_arn:"list[str]",
     availability_zones:"list[str]",
     template_id:str,
-    tags:dict[str, str]
+    tags:"dict[str, str]"
 ):
     """
     Create an auto scaling group.

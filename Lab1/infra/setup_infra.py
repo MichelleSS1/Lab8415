@@ -56,7 +56,7 @@ def setup_launch_templates(infra_info:InfraInfo):
     return infra_info, template1_id, template2_id
 
 
-def setup_load_balancer(vpc_id:str, subnet_ids:list[str], infra_info:InfraInfo):
+def setup_load_balancer(vpc_id:str, subnet_ids:"list[str]", infra_info:InfraInfo):
     """
     Create target groups, load balancer, listener and connect them.
 

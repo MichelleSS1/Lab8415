@@ -1,6 +1,6 @@
 # Fdb version 3
-["pdflatex"] 1666053776 "c:/Users/lirui/Desktop/Lab8415/Lab1/report/partie 2.tex" "partie 2.pdf" "partie 2" 1666053777
-  "C:/Users/lirui/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1666053681 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
+["pdflatex"] 1666058460 "c:/Users/lirui/Desktop/Lab8415/Lab1/report/partie 2.tex" "partie 2.pdf" "partie 2" 1666058462
+  "C:/Users/lirui/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1666057804 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/lirui/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1650514529 10254967 d7ea7c2b29727283b0b6d49a68252584 ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1233955448 1004 54797486969f23fa377b128694d548df ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1233955448 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -27,6 +27,7 @@
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb" 1247596666 34811 78b52f49e893bcba91bd7581cdc144c0 ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1247596666 32080 340ef9bf63678554ee606688e7b5339d ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1247596667 35752 024fb6c41858982481f6968b5fc26508 ""
+  "C:/Users/lirui/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb" 1247596667 32569 5e5ddc8df908dea60932f3c484a54c0d ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt9.pfb" 1247596667 29078 718ea4567ceff944262b0f5b0800e1d9 ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/context/base/mkii/supp-pdf.mkii" 1580393758 71627 94eb9990bed73c364d7f53f960cc8c5b ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/generic/babel/babel.sty" 1645887246 147649 823237dc86e8acfaa45204ca8085a60e ""
@@ -39,6 +40,7 @@
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/arabi/bblopts.cfg" 1139965200 902 c30e5c373bc58bde21f8f63a3091626f ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/babel-english/english.ldf" 1623001666 7008 9ff5fdcc865b01beca2b0fe4a46231d4 ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/base/article.cls" 1638778684 20144 8a7de377ae7a11ee924a7499611f5a9d ""
+  "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/base/omscmr.fd" 1638778684 2469 ed49302eacbaebdd899d39dedcd25393 ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/base/size11.clo" 1638778684 8464 74db94825c407b51399ca17d9bd38a3d ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/epstopdf-pkg/epstopdf-base.sty" 1623003186 13886 d1306dcf79a944f6988e688c1785f9ce ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/graphics-cfg/color.cfg" 1465894292 1213 620bba36b25224fa9b7e1ccb4ecb76fd ""
@@ -56,10 +58,10 @@
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/preprint/fullpage.sty" 1369148873 2867 05b418f78b224ec872f5b11081138605 ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/pythonhighlight/pythonhighlight.sty" 1486646478 4900 3e3ef6513daecbdc80ef326918df2377 ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1636288472 56029 3f7889dab51d620aa43177c391b7b190 ""
-  "c:/Users/lirui/Desktop/Lab8415/Lab1/report/partie 2.tex" 1666053775 2510 33a728e176f4c19b73a64e95092d7b6f ""
+  "c:/Users/lirui/Desktop/Lab8415/Lab1/report/partie 2.tex" 1666058459 3603 430e47a8a8a139cf0fbf3e3eee004e8a ""
   "cluster.png" 1666037760 18248 453d417d3c5c8e27c9c2eb3957771b82 ""
-  "partie 2.aux" 1666053777 769 4744cf57737a193bf82fa83af818bc95 "pdflatex"
-  "partie 2.tex" 1666053775 2510 33a728e176f4c19b73a64e95092d7b6f ""
+  "partie 2.aux" 1666058461 983 9c30dbaa7759d532d9e4161c62adafd7 "pdflatex"
+  "partie 2.tex" 1666058459 3603 430e47a8a8a139cf0fbf3e3eee004e8a ""
   (generated)
   "partie 2.aux"
   "partie 2.log"
