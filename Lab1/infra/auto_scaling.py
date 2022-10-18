@@ -30,7 +30,7 @@ def create_autoscaling_group(
         AutoScalingGroupName=group_name,
         MinSize=min_count,
         MaxSize=max_count,
-        #DesiredCapacity=max_count,
+        DesiredCapacity=max_count,
         LaunchTemplate={ 'LaunchTemplateId': template_id, 'Version': '$Latest'},
         AvailabilityZones=availability_zones,
         TargetGroupARNs=target_group_arn,

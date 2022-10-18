@@ -3,13 +3,18 @@
 # You should have aws cli installed for this script to work.
 
 # Make sure neccessary information to connect to AWS is available
-AWS_ENV_VAR=("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_DEFAULT_REGION")
+AWS_ENV_VAR=("AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "REGION")
 
 check_aws_var() {
     var_name=$1
 
     # Check if variable was set by user doing aws configure
-    value=$(aws configure get "${var_name}")
+    value=$(aws configure get default."${var_name,,}")
+
+    if [ "${var_name}" == "REGION" ]
+    then
+        var_name="AWS_DEFAULT_REGION"
+    fi
 
     # If variable not set by cli
     if [ -z "${value}" ]
@@ -92,6 +97,7 @@ docker image rm log8415_lab1
 printf "\n"
 
 # Get metrics and plot them
+mkdir -p benchmark/plots
 python benchmark/benchmark_metrics.py
 
 # Teardown of the infrastructure
