@@ -230,7 +230,7 @@ def get_infra_info(path:str):
 
     return infra_info
 
-def filters_from_tags(tags:dict[str, str]):
+def filters_from_tags(tags: "dict[str, str]"):
     """
     Format tags as filters for EC2 client methods.
 
