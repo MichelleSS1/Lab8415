@@ -36,7 +36,19 @@ Where AWS\_INSTANCE\_ID is the ID of the instance that responded to the request.
 \section{Infrastructure setup}
 
 \paragraph{Instances}\mbox{}\\
-The instances created will be five M4.large instances (two 2.4 GHz Intel Xeon E5-2676 vCPUs, 8 GiB memory, moderate network performance and 450 Mbps) and five T2.large instances (two Intel vCPUs, 8 GiB of memory and low to moderate network performance). However, due to account restrictions, we can only deploy a total of nine instances, so the second group will only have four. Each instance will allow SSH, HTTP and HTTPS traffic from 0.0.0.0/0, meaning the whole internet. The operating system is ubuntu and the image used is ami-08c40ec9ead489470. The availability zone will be us-east-1. Flask will be deployed on each instance at IP address 0.0.0.0 port 80.
+The instances created will be five M4.large instances (two 2.4 GHz Intel Xeon E5-2676 vCPUs, 8 GiB memory, moderate network performance and 450 Mbps) (Amazon Web Services, n.d.) and five T2.large instances (two Intel vCPUs, 8 GiB of memory and low to moderate network performance)  (Amazon Web Services, n.d.). However, due to account restrictions, we can only deploy a total of nine instances, so the second group will only have four. Each instance will allow SSH, HTTP and HTTPS traffic from 0.0.0.0/0, meaning the whole internet. The operating system is ubuntu and the image used is ami-08c40ec9ead489470. The availability zone will be us-east-1. Flask will be deployed on each instance at IP address 0.0.0.0 port 80. The storage is EBS-Only for both instances.  (Amazon Web Services, n.d.)
+
+\begin{table}[h!]
+    \caption{Specs of M4.large and T2.large}
+    \label{tab:table1}
+    \begin{tabular}{|l|c|c|c|c|r|}
+        \hline
+        \textbf{Type} & \textbf{vCPU} & \textbf{Memory (GiB)} & \textbf{EBS Bandwidth (Mbps)} & \textbf{Network performance}\\
+        M4.large & 2 & 8 &450 &Moderate\\
+        T2.large & 2 & 8 &- &Low to Moderate\\
+        \hline
+    \end{tabular}
+\end{table}
 
 \paragraph{Target groups:}\mbox{}\\
 The first target group will include all five M4.large instances, while the second one will be four T2.large instances. The targets will receive traffic on port 80. IPv4 will be used with the HTTP protocol.
@@ -59,13 +71,19 @@ The listener listens on port 80 and will send requests to one of the two target 
         },
     ],
 \end{python}
-The diagram of the setup is as follows:
+The diagram of the setup is as follows:\\
 
-\begin{figure}
-    \includegraphics[width=\linewidth]{cluster.png}
-    \caption{Application load balancer with 2 clusters and a forward listener}
-    \label{fig:setup}
-\end{figure}
+% \begin{figure}
+%     \includegraphics[width=0.5\linewidth]{cluster.png}
+%     \caption{Application load balancer with 2 clusters and a forward listener}
+%     \label{fig:setup}
+% \end{figure}
+\begin{center}
+    \includegraphics[scale=0.5]{cluster.png}\\
+    Figure 1. Application load balancer with 2 clusters and a forward listener  
+\end{center}
 
+\section{References}
+Amazon Web Services. (n.d.). {\it Amazon EC2 Instance Types}. Amazon Web Services. Retrieved October 17, 2022, from https://aws.amazon.com/ec2/instance-types/ 
 
 \end{document}
