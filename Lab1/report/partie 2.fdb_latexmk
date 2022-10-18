@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1666062584 "c:/Users/lirui/Desktop/Lab8415/Lab1/report/partie 2.tex" "partie 2.pdf" "partie 2" 1666062585
+["pdflatex"] 1666064400 "c:/Users/lirui/Desktop/Lab8415/Lab1/report/partie 2.tex" "partie 2.pdf" "partie 2" 1666064401
   "C:/Users/lirui/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map" 1666057804 80909 eab91d9745dd2edfd62a31d53cd5fe15 ""
   "C:/Users/lirui/AppData/Local/MiKTeX/miktex/data/le/pdftex/pdflatex.fmt" 1650514529 10254967 d7ea7c2b29727283b0b6d49a68252584 ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1233955448 1004 54797486969f23fa377b128694d548df ""
@@ -61,10 +61,10 @@
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/preprint/fullpage.sty" 1369148873 2867 05b418f78b224ec872f5b11081138605 ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/pythonhighlight/pythonhighlight.sty" 1486646478 4900 3e3ef6513daecbdc80ef326918df2377 ""
   "C:/Users/lirui/AppData/Local/Programs/MiKTeX/tex/latex/xcolor/xcolor.sty" 1636288472 56029 3f7889dab51d620aa43177c391b7b190 ""
-  "c:/Users/lirui/Desktop/Lab8415/Lab1/report/partie 2.tex" 1666062583 4503 1fb53043d7889c2ac9ea925adbee2841 ""
-  "cluster.png" 1666037760 18248 453d417d3c5c8e27c9c2eb3957771b82 ""
-  "partie 2.aux" 1666062585 1047 be674c8df39bf5e0db4abf1e2cf0f732 "pdflatex"
-  "partie 2.tex" 1666062583 4503 1fb53043d7889c2ac9ea925adbee2841 ""
+  "c:/Users/lirui/Desktop/Lab8415/Lab1/report/partie 2.tex" 1666064277 5983 19dde5130abf029d54094898bc5b9f9b ""
+  "cluster.png" 1666064377 18258 4151cde86f169d4c8ef4e3b7107d6e39 ""
+  "partie 2.aux" 1666064401 1219 d59ad4c764078f7b4980126374784dcc "pdflatex"
+  "partie 2.tex" 1666064277 5983 19dde5130abf029d54094898bc5b9f9b ""
   (generated)
   "partie 2.aux"
   "partie 2.log"

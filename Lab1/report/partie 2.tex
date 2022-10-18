@@ -59,7 +59,7 @@ The elastic load balancer will be an internet facing application load balancer (
 \paragraph{Listener}\mbox{}\\
 The listener listens on port 80 and will send requests to one of the two target groups that are attached to it. The protocol is HTTP, and both target groups are given equal weight. The URL path for the first target group is /cluster1 and the URL path for the second target group is /cluster2. The paths are specified in the value
 
-\begin{python}
+\begin{python}[h!]
     Conditions=[
         {
             'Field': 'path-pattern',
@@ -71,6 +71,21 @@ The listener listens on port 80 and will send requests to one of the two target 
         },
     ],
 \end{python}
+
+\paragraph{Auto Scaling}\mbox{}\\
+Each target group will be in a separate auto scaling group. The autoscaling groups will be in different subnets (us-east-1a and us-east-1b). Since we can only have 9 instances, each target group will have minimum of four instances and a maximum of five instances. The launch template contains the necessary data to create the instances, including the security groups, the instance type and the user data that will be executed when the instances are running.
+
+\paragraph{Deployment}
+\begin{enumerate}
+    \item Two launch templates are created with the necessary info to launch instances (instance type, user data, key name and security groups)
+    \item 2 target groups are created (target-group-1 and target-group-2)
+    \item A security group for the elastic load balancer is created
+    \item The load balancer lab1-load-balancer is created with the attached security group
+    \item A listener is created and the two target groups are attached to the listener; the two target groups have equal weight. The protocol used is HTTP.
+    \item Rules are created for routing the traffic with path /cluster1 to target-group-1 and /cluster2 to target-group-2. target-group-1 has a higher priority than target-group-2
+    \item The auto scaling groups group1 and group2 are created with the previously created templates. They are in different subnets.
+    \item The program waits for the instances to deploy flask.
+\end{enumerate}
 The diagram of the setup is as follows:\\
 
 % \begin{figure}
