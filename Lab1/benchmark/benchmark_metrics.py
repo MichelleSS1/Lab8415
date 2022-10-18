@@ -154,7 +154,6 @@ if __name__ == '__main__':
         'HealthyHostCount', 
     ]
 
-
     statistics = ['Average','Sum']
 
     # Create table for final result

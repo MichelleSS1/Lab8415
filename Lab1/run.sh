@@ -51,9 +51,10 @@ fi
 printf "Hey champion, now that we have what we need to connect to AWS, we can setup the infrastructure!\n\n"
 
 # Install python dependencies in a virtual environment
-sudo apt install python3.8-venv
-python3 -m venv venv
-. venv/bin/activate
+sudo apt-get update -y
+sudo apt install python3-venv
+python3 -m venv log8415_lab1_venv
+source log8415_lab1_venv/bin/activate
 
 pip install -r requirements.txt
 pip install -e .

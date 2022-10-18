@@ -14,6 +14,8 @@ class InfraInfo:
     """
     Class to store infra details
     """
+    launch_templates_ids: list[str]
+    auto_scaling_groups: list[str]
     security_groups_ids: list[str]
     instances_tags: dict[str, str]
     target_groups_arn: list[str]
