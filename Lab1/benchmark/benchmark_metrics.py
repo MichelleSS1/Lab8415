@@ -151,7 +151,15 @@ if __name__ == '__main__':
 
     # Metrics to get from cloudwatch
     metrics = [
+        'TargetResponseTime', 
         'HealthyHostCount', 
+        'UnHealthyHostCount', 
+        'TargetConnectionErrorCount', 
+        'RequestCountPerTarget', 
+        'HTTPCode_Target_2XX_Count', 
+        'HTTPCode_Target_3XX_Count', 
+        'HTTPCode_Target_4XX_Count', 
+        'HTTPCode_Target_5XX_Count'    
     ]
 
     statistics = ['Average','Sum']
