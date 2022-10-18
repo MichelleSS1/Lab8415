@@ -14,11 +14,11 @@ class InfraInfo:
     """
     Class to store infra details
     """
-    security_groups_ids: list[str]
-    instances_tags: dict[str, str]
-    target_groups_arn: list[str]
-    load_balancers_arn: list[str]
-    rules_arn: list[str]
+    security_groups_ids: "list[str]"
+    instances_tags: "dict[str, str]"
+    target_groups_arn: "list[str]"
+    load_balancers_arn: "list[str]"
+    rules_arn: "list[str]"
 
 
 def get_key_pair_name():
@@ -228,7 +228,7 @@ def get_infra_info(path:str):
 
     return infra_info
 
-def filters_from_tags(tags:dict[str, str]):
+def filters_from_tags(tags: "dict[str, str]"):
     """
     Format tags as filters for EC2 client methods.
 

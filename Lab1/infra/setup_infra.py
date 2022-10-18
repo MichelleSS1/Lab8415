@@ -105,7 +105,7 @@ def setup_instances(vpc_id:str, subnet1_id:str, subnet2_id:str, infra_info:Infra
 
     return infra_info
 
-def setup_load_balancer(vpc_id:str, subnet_ids:list[str], target1_arn:str, target2_arn:str, infra_info:InfraInfo):
+def setup_load_balancer(vpc_id:str, subnet_ids:"list[str]", target1_arn:str, target2_arn:str, infra_info:InfraInfo):
     """
     Create load balancer and attach target groups to it.
 

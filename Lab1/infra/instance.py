@@ -13,7 +13,7 @@ def create_ubuntu_instances(
     user_data:str, 
     subnet_id:str, 
     security_groups:"list[str]",
-    tags:dict[str, str]
+    tags:"dict[str, str]"
 ):
     """
     Create max_count instances, and at least min_count instances if not possible, with instance_type specifying the type
@@ -101,7 +101,7 @@ def create_cluster(name:str, instances_ids:"list[str]", vpc_id:str):
     print("done\n")
     return response, arn 
 
-def stopped_instances_ids(instances_ids:list[str]):
+def stopped_instances_ids(instances_ids:"list[str]"):
     """
     Retrieve instances with state in 'shutting-down' | 'terminated' | 'stopping' | 'stopped'
     among the given list of instances ids
@@ -129,7 +129,7 @@ def stopped_instances_ids(instances_ids:list[str]):
 
     return stopped_instances_ids
 
-def get_instances_ids(filters:list[dict]):
+def get_instances_ids(filters:"list[dict]"):
     """
     Retrieve instances ids corresponding to filters.
 

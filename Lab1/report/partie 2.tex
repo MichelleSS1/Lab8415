@@ -3,13 +3,14 @@
 \usepackage[english]{babel}
 \usepackage{fullpage}
 \usepackage{graphicx}
+\usepackage{pythonhighlight}
 
 \def\titre{}
 \def\auteur{}
 \def\courriel{}
 \makeatletter
 
-\title{LOG8415\\Advanced Concepts of Cloud Computing}
+\title{}
 
 \author{}
 
@@ -30,7 +31,22 @@ The first target group will include all five M4.large instances, while the secon
 The elastic load balancer will be an internet facing application load balancer (requests can be routed based on their contents such as the URL path). IPv4 is used. Its security group allows it to send and receive traffic from anywhere on the internet (TCP to and from 0.0.0.0/0). Two subnet IDs are specified (us-east-1a and us-east-1b).
 
 \paragraph{Listener}\mbox{}\\
-The listener listens on port 80 and will send requests to one of the two target groups that are attached to it. The protocol is HTTP, and both target groups are given equal weight. The URL path for the first target group is /cluster1 and the URL path for the second target group is /cluster2.
+The listener listens on port 80 and will send requests to one of the two target groups that are attached to it. The protocol is HTTP, and both target groups are given equal weight. The URL path for the first target group is /cluster1 and the URL path for the second target group is /cluster2. The paths are specified in the value
+
+\begin{python}
+    Conditions=[
+        {
+            'Field': 'path-pattern',
+            'PathPatternConfig': {
+                'Values': [
+                    path
+                ]
+            },
+        },
+    ],
+\end{python}
+The diagram of the setup is as follows:
+
 \begin{figure}
     \includegraphics[width=\linewidth]{cluster.png}
     \caption{Application load balancer with 2 clusters and a forward listener}
