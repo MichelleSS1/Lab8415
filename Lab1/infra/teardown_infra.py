@@ -40,7 +40,7 @@ def teardown_infra(infra_info_path:str):
     if len(infra_info.instances_tags) > 0:
         filters = filters_from_tags(infra_info.instances_tags)
         instances_ids = get_instances_ids(filters)
-
+        
         if len(instances_ids) > 0:
             terminate_instances(instances_ids)
     
