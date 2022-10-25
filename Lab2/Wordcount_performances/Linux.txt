@@ -1,0 +1,10 @@
+
+Image attached : wordcount_linux.png
+
+real 0m30.140s
+user 0m5.411s		
+sys  0m1.192s	
+
+Elapsed Time: It is the passed time between the invocation of the process or job and the termination of the process.
+User CPU Time: It is the addition of the tms_utime time and tms_cutime time values.
+System CPU Time: It is the addition of the tms_stime time and tms_cstime time values.
