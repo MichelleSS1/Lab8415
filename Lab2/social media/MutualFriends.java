@@ -29,75 +29,18 @@ public class MutualFriends {
         
         public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
             String adjacence = value.toString();
-            String[] userFriends = adjacence.split("\n");
-            Map<String, String[]> userToFriendsList = new HashMap<String, String[]>();
-            Map<String, String> userToFriendsString = new HashMap<String, String>();
-
-            ArrayList<String> users = new ArrayList<String>();
-
-            for(int i = 0; i < userFriends.length; i++) {
-                String[] userAndFriends = userFriends[i].split("\t");
-                String[] friends;
-                try {
-                    friends = userAndFriends[1].split(",");
-                } catch (Exception e) {
-                    friends = new String[] {};
-                }
-                users.add(userAndFriends[0]);
-
-                // if(userAndFriends[1].length() == 1) {
-                //     boolean isValid;
-                //     try {  
-                //         Double.parseDouble(friends[0]);
-                //         isValid = true;  
-                //     } catch(NumberFormatException e){  
-                //         isValid = false;
-                //     }  
-                    
-                //     if(!isValid) {
-                //         userAndFriends[1] = "";
-                //     }
-                // }
-                if(userAndFriends.length == 1) {
-                    // try {  
-                    //     Double.parseDouble(friends[0]);
-                    //     isValid = true;  
-                    // } catch(NumberFormatException e){  
-                    //     isValid = false;
-                    // }  
-                    
-                    // if(!isValid) {
-                    userAndFriends = new String[] {userAndFriends[0], ""};
-                    // }
-                }
-    
-                userToFriendsString.put(userAndFriends[0], userAndFriends[1]);
-    
-                // if(friends.length == 1) {
-                //     boolean isValid;
-                //     try {  
-                //         Double.parseDouble(friends[0]);
-                //         isValid = true;  
-                //     } catch(NumberFormatException e){  
-                //         isValid = false;
-                //     }  
-                    
-                //     if(!isValid) {
-                //         friends = new String[] {};
-                //     }
-                // }
-                userToFriendsList.put(userAndFriends[0], friends);
-            }
-            
-            for (String user:users) {
-                String[] friends = userToFriendsList.get(user);
+            String[] userFriends = adjacence.split("\t");
+            userTxt.set(userFriends[0]);
+            if(userFriends.length == 1){
+                // user has not added anyone
+                friendsOfFriend.set("\t" + userFriends[0]);
+                context.write(userTxt, friendsOfFriend);
+            } else {
+                String[] friends = userFriends[1].split(",");
+                String friendList = userFriends[1] + "\t" + userFriends[0];
                 for(String friend:friends) {
-                    // send to reducer: key = user; value = friends of friend
-                    userTxt.set(user);
-                    String toSend = userToFriendsString.get(friend);
-                    // toSend += ("\t" + friend);
-                    toSend = users.length();
-                    friendsOfFriend.set(toSend);
+                    userTxt.set(friend);
+                    friendsOfFriend.set(friendList);
                     context.write(userTxt, friendsOfFriend);
                 }
             }
@@ -125,19 +68,10 @@ public class MutualFriends {
             self.add(user);
             friends.add(self);
             String[] mutualFriendList;
-            Text t = new Text();
-            t.set("never went here");
-
  
             // for each list of mutual friends
             for (Text val : values) {
                 String[] friendsOfFriend = val.toString().split("\t");
-                try {
-                    Boolean b = (friendsOfFriend[0] == null);
-                    t.set(val.toString());
-                } catch(Exception e) {
-                    t.set("friendsOfFriend went wrong");
-                }
                 // if the first value is "" (empty string), this person does not have any friends.
                 if(friendsOfFriend[0] == "") {
 
@@ -180,7 +114,14 @@ public class MutualFriends {
                 }
             });
 
-            context.write(key, t);
+            // DEBUG
+            Text debug = new Text();
+            try {
+                debug.set(new Integer(friendAndCountedMutualFriends.get(0).count).toString());
+            } catch(Exception e) {
+                debug.set("");
+            }
+            context.write(key, debug);
         }
     }
 
