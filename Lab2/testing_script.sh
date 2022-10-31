@@ -2,7 +2,7 @@
 
 # Inspired by wordcount.py
 
-# 1. Compute the word frequency of the pg4300 dataset using Hadoop
+# Compute the word frequency of the pg4300 dataset using Hadoop
 echo -n "Hadoop - pg4300" >> results.txt;
 { 
   time hadoop jar files/wc.jar WordCount ./input/ ./output 2>1;
@@ -19,8 +19,7 @@ echo -n "Linux - pg4300" >> results.txt;
 echo "" >> results.txt;
 
 
-
-#Compute WordCount using Hadoop on the datasets 
+# Compute WordCount using Hadoop on the datasets 
 echo '---- Hadoop Spark -----' >> results.txt;
 for file in $(ls ~/Datasets/)
 do
