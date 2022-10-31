@@ -14,9 +14,9 @@ Index
 | https://tinyurl.com/weh83uyn | delamare-penny-00-t      | input9 |
 
 
-Elapsed Time: It is the passed time between the invocation of the process or job and the termination of the process.
-User CPU Time: It is the addition of the tms_utime time and tms_cutime time values.
-System CPU Time: It is the addition of the tms_stime time and tms_cstime time values.
+<p> Elapsed Time: It is the passed time between the invocation of the process or job and the termination of the process.</p>
+<p> User CPU Time: It is the addition of the tms_utime time and tms_cutime time values. </p>
+<p> System CPU Time: It is the addition of the tms_stime time and tms_cstime time values. </p>
 
 # Spark Iteration 1
 
