@@ -2,9 +2,11 @@
 
 # Source : https://dzone.com/articles/getting-hadoop-and-running
 
-# 1. Installing Java
+# Installing Java
 cd ~ || exit;
 apt install -y default-jdk;
+apt install default-jre -y;
+apt install default-jdk -y;
 
 # 2. Export the JAVA_HOME environment variable
 echo "export JAVA_HOME=/usr/lib/jvm/default-java"  >>  ~/.profile;

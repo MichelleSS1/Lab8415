@@ -21,7 +21,7 @@ mv /usr/local/hadoop-* /usr/local/hadoop
 
 Setup Hadoop environment variables
 ```bash
-echo "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" >> ~/.profile
+echo "export JAVA_HOME=/usr/lib/jvm/default-java" >> ~/.profile
 echo "export PATH=\$HADOOP_HOME/bin:\$PATH"  >>  ~/.profile;
 echo "export JAVA_HOME=/usr/lib/jvm/default-java" >> "$HADOOP_HOME"/etc/hadoop/hadoop-env.sh;
 echo "export HADOOP_HOME=/usr/local/hadoop-3.3.4" >> "$HADOOP_HOME"/etc/hadoop/hadoop-env.sh;
@@ -115,4 +115,54 @@ pip install pyspark findspark
 Example of spark command
 ```bash
 time /usr/local/bin/spark-submit wordCount.py Datasets/input1.txt
+```
+
+## Running mapper and reducer for “People You Might Know"
+Make sure you have mapper.py, reducer.py and soc-LiveJournal1Adj.txt from our github on root (~)
+
+Install python 2.7, because our mapper and reducer have ```#!/usr/bin/env python```
+```bash
+apt-get install python
+```
+
+Here is the command to run
+```bash
+hadoop jar  /usr/local/hadoop/share/hadoop/tools/lib/hadoop-streaming-3.3.4.jar  -file mapper.py -mapper mapper.py -file reducer.py -reducer reducer.py -input soc-LiveJournal1Adj.txt -output output
+```
+If you get an error like ```‘python3\r’: No such file or directory```, then it means the formatting of the mapper and reducer are Windows/DOS-style instead of Linux style
+
+There is two options to fix it...
+
+### Option 1:
+You install dos2unix
+```bash
+apt install dos2unix
+```
+
+And convert the mapper and reducer to unix with a command like this
+```bash
+dos2unix mapper_OR_reducer.py
+```
+
+### Option 2:
+The second option is to simply deleting the mapper.py and reducer.py that are in ~
+```bash
+rm -r mapper.py
+rm -r reducer.py
+```
+
+Touch them
+```bash
+touch mapper.py
+touch reducer.py 
+```
+
+Nano mapper.py and copy-paste its respective code into it
+```bash
+nano mapper.py
+```
+
+Nano reducer.py and copy-paste its respective code into it
+```bash
+nano reducer.py 
 ```
