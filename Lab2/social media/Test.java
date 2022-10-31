@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.w3c.dom.Text;
+
 public class Test {
 
     public static class FriendOfFriendsMapper  {
@@ -17,7 +19,8 @@ public class Test {
         
         public void map() throws IOException, InterruptedException {
             // String adjacence = value.toString();
-            String adjacence = Files.readString(Paths.get("soc-LiveJournal1Adj.txt"));
+            // String adjacence = Files.readString(Paths.get("soc-LiveJournal1Adj.txt"));
+            String adjacence = "Files";
             // adjacence.replace("\r", "");
 
             String[] userFriends = adjacence.split("\r");
@@ -65,7 +68,9 @@ public class Test {
                     // context.write(userTxt, friendsOfFriend);
                 }
             }
-            System.out.println("\ttest".split("\t")[0] == "");
+            HashSet<String> h = new HashSet<String>();
+            h.add("esdfsdf");
+            System.out.println(h.toArray()[0].toString());
         }
     }
     

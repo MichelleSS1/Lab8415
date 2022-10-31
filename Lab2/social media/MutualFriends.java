@@ -2,10 +2,12 @@
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -33,14 +35,15 @@ public class MutualFriends {
             userTxt.set(userFriends[0]);
             if(userFriends.length == 1){
                 // user has not added anyone
-                friendsOfFriend.set("\t" + userFriends[0]);
+                String friendListNull = userFriends[0] + "\t" + "null";
+                friendsOfFriend.set(friendListNull);
                 context.write(userTxt, friendsOfFriend);
             } else {
                 String[] friends = userFriends[1].split(",");
-                String friendList = userFriends[1] + "\t" + userFriends[0];
+                String friendList = userFriends[0] + "\t" + userFriends[1];
+                friendsOfFriend.set(friendList);
                 for(String friend:friends) {
                     userTxt.set(friend);
-                    friendsOfFriend.set(friendList);
                     context.write(userTxt, friendsOfFriend);
                 }
             }
@@ -49,79 +52,93 @@ public class MutualFriends {
     
     public static class Pair {
         public Integer count;
-        public HashSet<String> pair;
-        Pair(Integer count, HashSet<String> pair) {
+        public String uid;
+        Pair(Integer count, String uid) {
             this.count = count;
-            this.pair = pair;
+            this.uid = uid;
         }
     }
     
     
     public static class SortFriendsReducer extends Reducer<Text,Text,Text,Text> {
-        private IntWritable result = new IntWritable();
-        // key = user; values = friend of friends \t 
+        // private IntWritable result = new IntWritable();
         public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+
+            // this hashset contains all the people that the user has already added
+            // for example, 1--2, 1--3 and 2--3, when processing 2 the program will see that 3 is a mutual friend of 2 and 1
+            // this will remove these from suggestions
             HashSet<HashSet<String>> friends = new HashSet<HashSet<String>>();
+
+            // this uses a hashset as a key, the hashset containing set(user, potential suggestedfriend) --> number of mutual friends 
             HashMap<HashSet<String>, Integer> mutualFriendsCount = new HashMap<HashSet<String>, Integer>();
+
+            // this is a hashset with only the user in it
+            // the data contained is set("user-number")
             HashSet<String> self = new HashSet<String>();
             String user = key.toString();
             self.add(user);
             friends.add(self);
-            String[] mutualFriendList;
- 
-            // for each list of mutual friends
+
+            Text debug;
             for (Text val : values) {
                 String[] friendsOfFriend = val.toString().split("\t");
-                // if the first value is "" (empty string), this person does not have any friends.
-                if(friendsOfFriend[0] == "") {
-
-                } else {
-                    mutualFriendList = friendsOfFriend[0].split(",");
-                    for(String mutualFriend:mutualFriendList) {
-                        HashSet<String> pair = new HashSet<String>();
-                        pair.add(user); 
-                        pair.add(mutualFriend); 
-                        if(mutualFriendsCount.containsKey(pair)) {
-                            mutualFriendsCount.put(pair, mutualFriendsCount.get(pair) + 1);
-
-                        } else {
-                            mutualFriendsCount.put(pair, 1);
-                        }
+                String[] potentialFriends = friendsOfFriend[1].split(",");
+                HashSet<String> alreadyAdded = new HashSet<String>(){};
+                if(friendsOfFriend[0] != "null"){
+                    alreadyAdded.add(friendsOfFriend[0]);
+                    alreadyAdded.add(user);
+                }
+                friends.add(alreadyAdded);
+                for(String potentialFriend:potentialFriends) {
+                    HashSet<String> mutualFriend = new HashSet<String>();
+                    mutualFriend.add(user);
+                    mutualFriend.add(potentialFriend);
+                    if(mutualFriendsCount.containsKey(mutualFriend)) {
+                        mutualFriendsCount.put(mutualFriend, mutualFriendsCount.get(mutualFriend) + 1);
+                    } else {
+                        mutualFriendsCount.put(mutualFriend, 1);
                     }
                 }
-                // add the friend and user to the set
-                try {
-                    HashSet<String> friend = new HashSet<String>();
-                    friend.add(user);
-                    friend.add(friendsOfFriend[1]);
-                    friends.add(friend);
-                } catch(Exception e) {
-                }
+
             }
 
-            for(HashSet friend: friends){
+            for(HashSet<String> friend:friends) {
                 mutualFriendsCount.remove(friend);
             }
-            ArrayList<Pair> friendAndCountedMutualFriends = new ArrayList<Pair>();
-            for(HashSet<String> usrPair:mutualFriendsCount.keySet()) {
-                friendAndCountedMutualFriends.add(
-                    new Pair(mutualFriendsCount.get(usrPair), usrPair)
-                );
+            ArrayList<Pair> ranked = new ArrayList<Pair>(mutualFriendsCount.size());
+            for(HashSet<String> mutualFriend:mutualFriendsCount.keySet()) {
+                Integer count = mutualFriendsCount.get(mutualFriend);
+                mutualFriend.remove(user);
+                String uid = mutualFriend.toArray()[0].toString();
+                ranked.add(new Pair(count, uid));
             }
-            friendAndCountedMutualFriends.sort(new Comparator<Pair>() {
-                public int compare(Pair left, Pair right)  {
-                    return right.count - left.count; // The order depends on the direction of sorting.
+            ranked.sort(new Comparator<Pair>() {
+                public int compare(Pair left, Pair right) {
+                    return left.count - right.count;
                 }
             });
+            
+            int size = ranked.size() < 10 ? ranked.size(): 10;
 
-            // DEBUG
-            Text debug = new Text();
-            try {
-                debug.set(new Integer(friendAndCountedMutualFriends.get(0).count).toString());
-            } catch(Exception e) {
-                debug.set("");
+            String suggested = "";
+            for(int i = 0; i < size; i++){
+                if(i == 0) {
+                    suggested += ranked.get(i).uid;
+                } else {
+                    suggested += ("," + ranked.get(i).uid);
+                }
             }
-            context.write(key, debug);
+
+            Text suggestedWrittable = new Text();
+            suggestedWrittable.set(suggested);
+            context.write(key, suggestedWrittable);
+            // DEBUG
+            // try {
+            //     debug.set(new Integer(friendAndCountedMutualFriends.get(0).count).toString());
+            // } catch(Exception e) {
+            // debug.set("");
+            // }
+            
         }
     }
 
@@ -136,7 +153,7 @@ public class MutualFriends {
 
         job.setJarByClass(MutualFriends.class);
         job.setMapperClass(FriendOfFriendsMapper.class);
-        job.setCombinerClass(SortFriendsReducer.class);
+        // job.setCombinerClass(SortFriendsReducer.class);
         job.setReducerClass(SortFriendsReducer.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
