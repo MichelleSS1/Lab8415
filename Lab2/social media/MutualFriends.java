@@ -114,7 +114,7 @@ public class MutualFriends {
             }
             ranked.sort(new Comparator<Pair>() {
                 public int compare(Pair left, Pair right) {
-                    return left.count - right.count;
+                    return right.count - left.count;
                 }
             });
             
@@ -123,22 +123,15 @@ public class MutualFriends {
             String suggested = "";
             for(int i = 0; i < size; i++){
                 if(i == 0) {
-                    suggested += ranked.get(i).uid;
+                    suggested += ranked.get(i).count.toString();
                 } else {
-                    suggested += ("," + ranked.get(i).uid);
+                    suggested += ("," + ranked.get(i).count.toString());
                 }
             }
 
             Text suggestedWrittable = new Text();
             suggestedWrittable.set(suggested);
             context.write(key, suggestedWrittable);
-            // DEBUG
-            // try {
-            //     debug.set(new Integer(friendAndCountedMutualFriends.get(0).count).toString());
-            // } catch(Exception e) {
-            // debug.set("");
-            // }
-            
         }
     }
 
