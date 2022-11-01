@@ -33,6 +33,15 @@ public class MutualFriends {
             String adjacence = value.toString();
             String[] userFriends = adjacence.split("\t");
             userTxt.set(userFriends[0]);
+            // the idea is, write, for each friend f of n, f --> n TAB friends of n
+            // this way, for example, for user u with friends q, w, e and r, the reducer will see
+            // the reducer sees:
+            // u --> friends of q, ex. [1 3 5 6]
+            // u --> friends of w, ex. [7 3 2 6]
+            // u --> friends of e, ex. [8 9 8 6]
+            // u --> friends of r, ex. [1 9 5 6]
+            // this way we see that 6 has 4 mutual friends with u, 5 and 3 has 2, etc. 
+
             if(userFriends.length == 1){
                 // user has not added anyone
                 String friendListNull = userFriends[0] + "\t" + "null";
@@ -105,6 +114,7 @@ public class MutualFriends {
             for(HashSet<String> friend:friends) {
                 mutualFriendsCount.remove(friend);
             }
+            
             ArrayList<Pair> ranked = new ArrayList<Pair>(mutualFriendsCount.size());
             for(HashSet<String> mutualFriend:mutualFriendsCount.keySet()) {
                 Integer count = mutualFriendsCount.get(mutualFriend);
@@ -121,6 +131,8 @@ public class MutualFriends {
             int size = ranked.size() < 10 ? ranked.size(): 10;
 
             String suggested = "";
+            // DEBUG
+            // Change count.toString() to uid
             for(int i = 0; i < size; i++){
                 if(i == 0) {
                     suggested += ranked.get(i).count.toString();
@@ -131,7 +143,65 @@ public class MutualFriends {
 
             Text suggestedWrittable = new Text();
             suggestedWrittable.set(suggested);
-            context.write(key, suggestedWrittable);
+            // collect all the users to the next step
+            // context.write(new Text("lessThan10"), new Text(user + '|' + Integer.valueOf(ranked.size()).toString()));
+            // only those that have less than 10 need this step
+            // if(size < 10) {
+                // context.write(new Text("lessThan10"), new Text(user + '\t' + Integer.valueOf(ranked.size()).toString()));
+            // } else {
+                // if they already have 10, they can be written to directly
+                context.write(key, suggestedWrittable);
+            // }
+        }
+    }
+    // for those who have less than 10, suggest 10 randoms ones.
+    // a better algorithm could look for friends of friends of friends
+    // or look for the most popular ones
+    public static class AddRandomReducer extends Reducer<Text,Text,Text,Text> {
+        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+            ArrayList<Pair> users = new ArrayList<Pair>();
+            ArrayList<String[]> lessThan10 = new ArrayList<String[]>();
+            for(Text val:values){
+                if(key.toString() != "lessThan10") {
+                    context.write(key, val);
+                } else {
+                    String[] ranked = val.toString().split("|");
+                    String[] friends = val.toString().split("\t");
+                    if(friends.length < 2) { // can't split by | so it's the rank
+                        users.add(new Pair(Integer.valueOf(ranked[1]), ranked[0]));
+                    } else {
+                        lessThan10.add(friends);
+                    }
+                }
+            }
+
+            users.sort(new Comparator<Pair>() {
+                public int compare(Pair left, Pair right) {
+                    return right.count - left.count;
+                }
+            });
+
+            for(String[] val:lessThan10) {
+                String uid = val[0];
+                String[] tmp = val[1].split(",");
+                HashSet<String> friends = new HashSet<String>();
+                for(String f:tmp) {
+                    friends.add(f);
+                }
+
+                for(Pair usr: users) {
+                    if(friends.size() == 10) {
+                        break;
+                    }
+                    if(!friends.contains(usr.uid)) {
+                        val[1] += ("," + usr.uid); 
+                    }
+                }
+                context.write(new Text(uid), new Text(val[1]));
+
+            }
+
+
         }
     }
 
