@@ -144,10 +144,10 @@ public class MutualFriends {
             Text suggestedWrittable = new Text();
             suggestedWrittable.set(suggested);
             // collect all the users to the next step
-            context.write(new Text("lessThan10"), new Text(user + '|' + Integer.valueOf(ranked.size()).toString()));
+            context.write(new Text("lessThan10"), new Text(user + "|" + Integer.valueOf(ranked.size()).toString()));
             // only those that have less than 10 need this step
             if(size < 10) {
-                context.write(new Text("lessThan10"), new Text(user + '.' + Integer.valueOf(ranked.size()).toString()));
+                context.write(new Text("lessThan10"), new Text(user + ";" + (suggested.equals("") ? "null" : suggested)));
             } else {
                 // if they already have 10, they can be written to directly
                 context.write(key, suggestedWrittable);
@@ -170,13 +170,18 @@ public class MutualFriends {
             ArrayList<Pair> users = new ArrayList<Pair>();
             ArrayList<String[]> lessThan10 = new ArrayList<String[]>();
             for(Text val:values){
-                if(key.toString() != "lessThan10") {
+                if(!key.toString().equals("lessThan10")) {
                     context.write(key, val);
                 } else {
-                    String[] ranked = val.toString().split("|");
-                    String[] friends = val.toString().split(".");
-                    if(friends.length < 2) { // can't split by | so it's the rank
-                        users.add(new Pair(Integer.valueOf(ranked[1]), ranked[0]));
+                    String[] ranked = val.toString().split("\\|");
+                    String[] friends = val.toString().split(";");
+                    if(friends.length < 2) { // can't split by ; so it's the rank
+                        try {
+                            users.add(new Pair(Integer.valueOf(ranked[1]),ranked[0]));
+
+                        } catch(Exception e) {
+                            context.write(new Text("inside catch"), new Text(ranked[1]));
+                        }
                     } else {
                         lessThan10.add(friends);
                     }
@@ -191,7 +196,13 @@ public class MutualFriends {
 
             for(String[] val:lessThan10) {
                 String uid = val[0];
+
                 String[] tmp = val[1].split(",");
+                if(val[1].equals("null")){
+                    tmp = new String[]{};
+                    val[1] = "";
+                }
+                
                 HashSet<String> friends = new HashSet<String>();
                 for(String f:tmp) {
                     friends.add(f);
@@ -202,7 +213,8 @@ public class MutualFriends {
                         break;
                     }
                     if(!friends.contains(usr.uid)) {
-                        val[1] += ("," + usr.uid); 
+                        val[1] += (val[1].equals("") ? usr.uid : ("," + usr.uid));
+                        friends.add(usr.uid);
                     }
                 }
                 context.write(new Text(uid), new Text(val[1]));
@@ -241,7 +253,7 @@ public class MutualFriends {
         Job job2 = Job.getInstance(conf2, "AddMoreFriends");
         job2.setJarByClass(MutualFriends.class);
         job2.setMapperClass(SuggestOtherFriendsMapper.class);
-        job2.setReducerClass(AddRandomReducer.class);
+        job2.setCombinerClass(AddRandomReducer.class);
         job2.setOutputKeyClass(Text.class);
         job2.setOutputValueClass(Text.class);
         FileInputFormat.addInputPath(job2, new Path(tmp));
