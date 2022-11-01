@@ -73,10 +73,6 @@ cd Lab2 || exit;
 hadoop com.sun.tools.javac.Main ./WordCount.java;
 jar cf wordcount.jar WordCount*.class;
 
-# Executing Wordcount
-hadoop fs -cp ./pg4300.txt ~/input;
-hadoop jar wordcount.jar WordCount ./input/ ./output
-
 
 # Installation of Spark dependencies
 apt-get update;
