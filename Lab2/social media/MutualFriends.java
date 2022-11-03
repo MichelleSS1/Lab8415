@@ -124,7 +124,12 @@ public class MutualFriends {
             }
             ranked.sort(new Comparator<Pair>() {
                 public int compare(Pair left, Pair right) {
-                    return right.count - left.count;
+                    Integer nbMutual = right.count - left.count;
+                    if(nbMutual != 0) {
+                        return nbMutual;
+                    } else {
+                        return Integer.valueOf(left.uid) - Integer.valueOf(right.uid);
+                    }
                 }
             });
             
@@ -140,88 +145,21 @@ public class MutualFriends {
                     suggested += ("," + ranked.get(i).uid);
                 }
             }
+            if(suggested.equals("null")) {
+                suggested = "";
+            }
 
             Text suggestedWrittable = new Text();
             suggestedWrittable.set(suggested);
             // collect all the users to the next step
-            context.write(new Text("lessThan10"), new Text(user + "|" + Integer.valueOf(ranked.size()).toString()));
+            context.write(new Text(user), new Text(suggested));
             // only those that have less than 10 need this step
-            if(size < 10) {
-                context.write(new Text("lessThan10"), new Text(user + ";" + (suggested.equals("") ? "null" : suggested)));
-            } else {
-                // if they already have 10, they can be written to directly
-                context.write(key, suggestedWrittable);
-            }
-        }
-    }
-
-    public static class SuggestOtherFriendsMapper extends Mapper<Object, Text, Text, Text> {
-        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-            String[] s = value.toString().split("\t");
-            context.write(new Text(s[0]), new Text(s[1]));
-        }
-    }
-
-    // for those who have less than 10, suggest 10 randoms ones.
-    // a better algorithm could look for friends of friends of friends
-    // or look for the most popular ones
-    public static class AddRandomReducer extends Reducer<Text,Text,Text,Text> {
-        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
-            ArrayList<Pair> users = new ArrayList<Pair>();
-            ArrayList<String[]> lessThan10 = new ArrayList<String[]>();
-            for(Text val:values){
-                if(!key.toString().equals("lessThan10")) {
-                    context.write(key, val);
-                } else {
-                    String[] ranked = val.toString().split("\\|");
-                    String[] friends = val.toString().split(";");
-                    if(friends.length < 2) { // can't split by ; so it's the rank
-                        try {
-                            users.add(new Pair(Integer.valueOf(ranked[1]),ranked[0]));
-
-                        } catch(Exception e) {
-                            context.write(new Text("inside catch"), new Text(ranked[1]));
-                        }
-                    } else {
-                        lessThan10.add(friends);
-                    }
-                }
-            }
-
-            users.sort(new Comparator<Pair>() {
-                public int compare(Pair left, Pair right) {
-                    return right.count - left.count;
-                }
-            });
-
-            for(String[] val:lessThan10) {
-                String uid = val[0];
-
-                String[] tmp = val[1].split(",");
-                if(val[1].equals("null")){
-                    tmp = new String[]{};
-                    val[1] = "";
-                }
-                
-                HashSet<String> friends = new HashSet<String>();
-                for(String f:tmp) {
-                    friends.add(f);
-                }
-
-                for(Pair usr: users) {
-                    if(friends.size() == 10) {
-                        break;
-                    }
-                    if(!friends.contains(usr.uid)) {
-                        val[1] += (val[1].equals("") ? usr.uid : ("," + usr.uid));
-                        friends.add(usr.uid);
-                    }
-                }
-                context.write(new Text(uid), new Text(val[1]));
-
-            }
-
-
+            // if(size < 10) {
+            //     context.write(new Text("lessThan10"), new Text(user + ";" + (suggested.equals("") ? "null" : suggested)));
+            // } else {
+            //     // if they already have 10, they can be written to directly
+            //     context.write(key, suggestedWrittable);
+            // }
         }
     }
 
@@ -229,7 +167,7 @@ public class MutualFriends {
         Configuration conf = new Configuration();
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
         if (otherArgs.length < 2) {
-            System.err.println("Usage: wordcount <in> [<in>...] <out>");
+            System.err.println("Usage: MutualFriends <in> [<in>...] <out>");
             System.exit(2);
         }
         Job job = Job.getInstance(conf, "MutualFriends");
@@ -243,25 +181,15 @@ public class MutualFriends {
             FileInputFormat.addInputPath(job, new Path(otherArgs[i]));
         }
 
-        String tmp = otherArgs[otherArgs.length - 1] + "/tmp_output_job1";
-        // FileOutputFormat.setOutputPath(job, new Path(otherArgs[otherArgs.length - 1]));
-        FileOutputFormat.setOutputPath(job, new Path(tmp));
-
-        job.waitForCompletion(true);
         String out = otherArgs[otherArgs.length - 1];
-        Configuration conf2 = new Configuration();
-        Job job2 = Job.getInstance(conf2, "AddMoreFriends");
-        job2.setJarByClass(MutualFriends.class);
-        job2.setMapperClass(SuggestOtherFriendsMapper.class);
-        job2.setCombinerClass(AddRandomReducer.class);
-        job2.setOutputKeyClass(Text.class);
-        job2.setOutputValueClass(Text.class);
-        FileInputFormat.addInputPath(job2, new Path(tmp));
-        FileOutputFormat.setOutputPath(job2, new Path(out + "/job2"));
+        // FileOutputFormat.setOutputPath(job, new Path(otherArgs[otherArgs.length - 1]));
+        FileOutputFormat.setOutputPath(job, new Path(out));
 
         
 
-        System.exit(job2.waitForCompletion(true) ? 0 : 1);
+        
+
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
 
 }
