@@ -134,3 +134,7 @@ plots/
 metrics.csv
 infra_info
 lb_dns_name.txt
+
+# java
+**/*.class
+**/output*

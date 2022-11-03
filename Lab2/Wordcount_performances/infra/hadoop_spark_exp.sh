@@ -66,7 +66,7 @@ hdfs dfs -mkdir -p input;
 apt install git -y;
 git clone https://github.com/MichelleSS1/Lab8415.git;
 
-cd Lab2 || exit;
+cd Lab2/Wordcount_performances || exit;
 
 # Create a JAR file
 hadoop com.sun.tools.javac.Main ./WordCount.java;
@@ -77,3 +77,10 @@ jar cf wordcount.jar WordCount*.class;
 apt-get update;
 apt install python3-pip -y;
 pip install pyspark findspark;
+
+# Run performance tests
+./testing_script.sh
+
+clear
+
+cat results.txt

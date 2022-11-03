@@ -1,0 +1,103 @@
+Hadoop - pg4300
+real	0m0.648s
+user	0m1.365s
+sys	0m0.078s
+
+Linux - pg4300
+real	0m0.252s
+user	0m0.256s
+sys	0m0.008s
+
+---- Hadoop -----
+input1.txt
+real	0m1.902s
+user	0m3.438s
+sys	0m0.176s
+
+input2.txt
+real	0m1.940s
+user	0m3.159s
+sys	0m0.182s
+
+input3.txt
+real	0m1.937s
+user	0m3.334s
+sys	0m0.179s
+
+input4.txt
+real	0m2.084s
+user	0m3.852s
+sys	0m0.177s
+
+input5.txt
+real	0m2.460s
+user	0m3.488s
+sys	0m0.185s
+
+input6.txt
+real	0m2.207s
+user	0m4.770s
+sys	0m0.263s
+
+input7.txt
+real	0m1.908s
+user	0m2.767s
+sys	0m0.138s
+
+input8.txt
+real	0m1.984s
+user	0m3.216s
+sys	0m0.172s
+
+input9.txt
+real	0m1.942s
+user	0m2.827s
+sys	0m0.178s
+
+---- Apache Spark -----
+input1.txt
+real	0m0.053s
+user	0m0.049s
+sys	0m0.004s
+
+input2.txt
+real	0m0.051s
+user	0m0.035s
+sys	0m0.016s
+
+input3.txt
+real	0m0.054s
+user	0m0.050s
+sys	0m0.004s
+
+input4.txt
+real	0m0.051s
+user	0m0.031s
+sys	0m0.020s
+
+input5.txt
+real	0m0.052s
+user	0m0.044s
+sys	0m0.008s
+
+input6.txt
+real	0m0.050s
+user	0m0.050s
+sys	0m0.000s
+
+input7.txt
+real	0m0.053s
+user	0m0.040s
+sys	0m0.012s
+
+input8.txt
+real	0m0.051s
+user	0m0.038s
+sys	0m0.013s
+
+input9.txt
+real	0m0.052s
+user	0m0.044s
+sys	0m0.008s
+
+
