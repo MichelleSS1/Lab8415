@@ -21,40 +21,56 @@ def run_hadoop_spark_exp():
     with open(os.path.join(sys.path[0], 'hadoop_spark_exp.sh'), 'r') as f:
         script = f.read()
 
+    all_stderr = []
+
     print("SSH connection to instance")
     client.connect(hostname=public_ip, port=22, username='ubuntu', key_filename=pKey_filename)
 
     print("Executing tests via SSH. It may take some time.")
-    _, stdout, stderr1 = client.exec_command(command=script, get_pty=True)
+    _, stdout, stderr = client.exec_command(command=script, get_pty=True)
     exit_status = stdout.channel.recv_exit_status()
     if exit_status == 0:
+        all_stderr.append(stderr)
         print("done\n")
     else:
         raise Exception("Tests execution didn't succeed")
 
     print("Collecting hadoop results")
-    _, hadoop_res, stderr2 = client.exec_command('cat ~/hadoop.txt', get_pty=True)
+    _, hadoop_res, stderr = client.exec_command('cat ~/hadoop.txt', get_pty=True)
     exit_status = hadoop_res.channel.recv_exit_status()
     if exit_status == 0:
+        all_stderr.append(stderr)
         print("done\n")
     else:
         raise Exception("Failed to collect hadoop results")
 
     print("Collecting spark results")
-    _, spark_res, stderr3 = client.exec_command('cat ~/spark.txt', get_pty=True)
+    _, spark_res, stderr = client.exec_command('cat ~/spark.txt', get_pty=True)
     spark_res.channel.recv_exit_status()
     if exit_status == 0:
+        all_stderr.append(stderr)
         print("done\n")
     else:
         raise Exception("Failed to collect spark results")
 
-    stderr = stderr1.readlines() + stderr2.readlines() + stderr3.readlines()
+    print("Collecting hadoop vs linux results")
+    _, had_vs_linux, stderr = client.exec_command('cat ~/results.txt', get_pty=True)
+    exit_status = had_vs_linux.channel.recv_exit_status()
+    if exit_status == 0:
+        all_stderr.append(stderr)
+        print("done\n")
+    else:
+        raise Exception("Failed to collect hadoop vs linux results")
+    
+    stderr_lines = []
+    for stderr in all_stderr:
+        stderr_lines.extend(stderr.readlines()) 
 
-    return hadoop_res, spark_res, stderr
+    return hadoop_res, spark_res, had_vs_linux, stderr_lines
 
 
 if __name__ == '__main__':
-    hadoop_res, spark_res, stderr = run_hadoop_spark_exp()
+    hadoop_res, spark_res, had_vs_linux, stderr = run_hadoop_spark_exp()
 
     hadoop_res_lines = hadoop_res.readlines()
     with open(os.path.join(sys.path[0], '../hadoop.txt'), 'w') as f:
@@ -64,10 +80,17 @@ if __name__ == '__main__':
     with open(os.path.join(sys.path[0], '../spark.txt'), 'w') as f:
         f.writelines(spark_res_lines)
 
+    had_vs_linux_lines = had_vs_linux.read()
+    with open(os.path.join(sys.path[0], '../hadoop_vs_linux.txt'), 'w') as f:
+        f.write(had_vs_linux_lines)
+
     hadoop_scores = []
     spark_scores = []
 
     print("Experiment results:\n")
+
+    print("Hadoop vs Linux:")
+    print(had_vs_linux_lines)
 
     print("Hadoop:")
     for line in hadoop_res_lines:
@@ -83,6 +106,8 @@ if __name__ == '__main__':
     for line in stderr:
         print(line)
 
+    assert len(hadoop_scores) == len(spark_scores)
+    
     print("Making plots from results\n")
     result = pd.DataFrame({'hadoop': hadoop_scores, 'spark': spark_scores})
 
@@ -90,7 +115,7 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(nrows=1, ncols=3, sharey=True)
 
     # Define variables x, y for the graph
-    x = range(1, 4)
+    x = range(1, len(hadoop_scores) + 1)
     y1 = result['hadoop']     
     y2 = result['spark']
 

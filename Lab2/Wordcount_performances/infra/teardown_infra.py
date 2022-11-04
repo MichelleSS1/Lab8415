@@ -3,7 +3,7 @@ import sys
 import boto3
 from time import sleep
 from instance import terminate_instances
-from log8415_utils.infra_utils import delete_security_group, get_infra_info
+from infra_utils import delete_security_group, get_infra_info
 
 
 ec2_client = boto3.client('ec2') 
