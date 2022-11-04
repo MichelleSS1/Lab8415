@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# Inspired by wordcount.py
-
 # Creating Input
 hdfs dfs -mkdir -p input;
 hdfs dfs -copyFromLocal pg4300.txt input

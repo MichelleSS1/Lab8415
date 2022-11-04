@@ -25,13 +25,28 @@ def run_hadoop_spark_exp():
     client.connect(hostname=public_ip, port=22, username='ubuntu', key_filename=pKey_filename)
 
     print("Executing tests via SSH. It may take some time.")
-    _, _, stderr1 = client.exec_command(command=script, get_pty=True)
-    sleep(15)
+    _, stdout, stderr1 = client.exec_command(command=script, get_pty=True)
+    exit_status = stdout.channel.recv_exit_status()
+    if exit_status == 0:
+        print("done\n")
+    else:
+        raise Exception("Tests execution didn't succeed")
 
-    _, hadoop_res, stderr2 = client.exec_command('cat ~/hadoop.txt')
-    _, spark_res, stderr3 = client.exec_command('cat ~/spark.txt')
+    print("Collecting hadoop results")
+    _, hadoop_res, stderr2 = client.exec_command('cat ~/hadoop.txt', get_pty=True)
+    exit_status = hadoop_res.channel.recv_exit_status()
+    if exit_status == 0:
+        print("done\n")
+    else:
+        raise Exception("Failed to collect hadoop results")
 
-    print("done\n")
+    print("Collecting spark results")
+    _, spark_res, stderr3 = client.exec_command('cat ~/spark.txt', get_pty=True)
+    spark_res.channel.recv_exit_status()
+    if exit_status == 0:
+        print("done\n")
+    else:
+        raise Exception("Failed to collect spark results")
 
     stderr = stderr1.readlines() + stderr2.readlines() + stderr3.readlines()
 
@@ -41,12 +56,13 @@ def run_hadoop_spark_exp():
 if __name__ == '__main__':
     hadoop_res, spark_res, stderr = run_hadoop_spark_exp()
 
-    
+    hadoop_res_lines = hadoop_res.readlines()
     with open(os.path.join(sys.path[0], '../hadoop.txt'), 'w') as f:
-        f.writelines(hadoop_res)
+        f.writelines(hadoop_res_lines)
 
+    spark_res_lines = spark_res.readlines()
     with open(os.path.join(sys.path[0], '../spark.txt'), 'w') as f:
-        f.writelines(spark_res)
+        f.writelines(spark_res_lines)
 
     hadoop_scores = []
     spark_scores = []
@@ -54,12 +70,12 @@ if __name__ == '__main__':
     print("Experiment results:\n")
 
     print("Hadoop:")
-    for line in hadoop_res:
+    for line in hadoop_res_lines:
         print(line)
         hadoop_scores.append(float(line))
 
     print("Spark:")
-    for line in spark_res:
+    for line in spark_res_lines:
         print(line)
         spark_scores.append(float(line))
 
@@ -67,7 +83,7 @@ if __name__ == '__main__':
     for line in stderr:
         print(line)
 
-    print("Making plots from results")
+    print("Making plots from results\n")
     result = pd.DataFrame({'hadoop': hadoop_scores, 'spark': spark_scores})
 
     # Create the graph
@@ -87,14 +103,14 @@ if __name__ == '__main__':
     axs[2].set_title('Average')   
     axs[2].plot(['Hadoop', 'Spark'], [y1.mean(), y2.mean()], 'o-')
 
-    axs[0].set_ylabel('Time (s)')
-    
     fig.suptitle('Execution time')
+    fig.supylabel('Time (s)')
+    fig.supxlabel('Experiment')
 
     # Save plot and show it 
     plt.savefig(os.path.join(sys.path[0], f'../execution_time.png'), bbox_inches='tight')
 
     # Close the figure window
     plt.close(fig)
-    
+
     print("done\n")

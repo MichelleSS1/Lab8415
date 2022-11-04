@@ -39,4 +39,4 @@ sudo apt install python3-pip -y;
 pip install pyspark;
 
 # Run performance tests
-./scripts/testing_script.sh
+./scripts/test_script.sh
