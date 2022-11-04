@@ -38,7 +38,6 @@ def teardown_infra(infra_info_path:str):
     infra_info = get_infra_info(infra_info_path)
 
     terminate_instances(infra_info.instances_ids)
-    sleep(60)
     
     for sec_gp in infra_info.security_groups_ids:
         try:

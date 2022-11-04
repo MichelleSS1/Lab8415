@@ -138,3 +138,6 @@ lb_dns_name.txt
 # java
 **/*.class
 **/output*
+**/input*
+
+**/*.pem

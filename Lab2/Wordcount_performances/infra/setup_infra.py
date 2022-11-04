@@ -79,7 +79,7 @@ if __name__ == '__main__':
 
     # Necessary information to teardown infra
     infra_info = InfraInfo(
-        intances_ids=[],
+        instances_ids=[],
         security_groups_ids=[], 
     )
     try:  
@@ -89,16 +89,16 @@ if __name__ == '__main__':
 
         key_pair_name = get_key_pair_name()
         instance = create_ubuntu_instances("m4.large", 1, 1, key_pair_name, subnet1_id, [security_group.id], {'lab': 'lab2'})[0]
-        infra_info.intances_ids.append(instance.id)
+        infra_info.instances_ids.append(instance.id)
 
+        print("Waiting for instance to be in a running state")
         waiter = ec2_client.get_waiter('instance_running')
         waiter.wait(InstanceIds=[instance.id])
         instance.reload()
-        print(instance.public_ip_address)
+        print("done\n")
 
         with open(os.path.join(sys.path[0], 'ssh_info.txt'), 'w') as f:
-            f.write(key_pair_name)
-            f.write(instance.public_ip_address)
+            f.writelines([key_pair_name + '\n', instance.public_ip_address])
 
         print("done\n")
 

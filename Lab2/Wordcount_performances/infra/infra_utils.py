@@ -12,7 +12,7 @@ class InfraInfo:
     """
     Class to store infra details
     """
-    intances_ids:"list[str]"
+    instances_ids:"list[str]"
     security_groups_ids:"list[str]"
 
 
