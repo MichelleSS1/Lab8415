@@ -22,34 +22,6 @@ echo "export HADOOP_HOME=~/hadoop-3.3.4" >> "$HADOOP_HOME"/etc/hadoop/hadoop-env
 
 source ~/.profile;
 
-# Setup Hadoop property elements
-
-head -n -3 "$HADOOP_HOME"/etc/hadoop/core-site.xml > tmp.txt && mv tmp.txt "$HADOOP_HOME"/etc/hadoop/core-site.xml;
-echo "<configuration><property><name>hadoop.tmp.dir</name><value>/var/lib/hadoop</value></property></configuration>" >> "$HADOOP_HOME"/etc/hadoop/core-site.xml;
-
-head -n -4 "$HADOOP_HOME"/etc/hadoop/hdfs-site.xml > tmp.txt && mv tmp.txt "$HADOOP_HOME"/etc/hadoop/hdfs-site.xml;
-echo "<configuration><property><name>dfs.replication</name><value>1</value></property></configuration>" >> "$HADOOP_HOME"/etc/hadoop/hdfs-site.xml;
-
-
-mkdir /var/lib/hadoop;
-chmod 777 /var/lib/hadoop;
-
-# Formatting the HDFS Filesystem
-hdfs namenode -format;
-
-# Setting up HDFS configuration
-touch ~/start-dfs;
-{
-    echo "export HDFS_NAMENODE_USER=\"root\""
-    echo "export HDFS_DATANODE_USER=\"root\""
-    echo "export HDFS_SECONDARYNAMENODE_USER=\"root\""
-    echo "export YARN_RESOURCEMANAGER_USER=\"root\""
-    echo "export YARN_NODEMANAGER_USER=\"root\""  
-} >>  ~/.profile;
-
-source ~/.profile;
-
-
 # Install git and clone Datasets
 git clone https://github.com/MichelleSS1/Lab8415.git;
 
