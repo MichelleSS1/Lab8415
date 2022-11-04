@@ -1,6 +1,5 @@
 import boto3
 import pickle
-from time import time
 from dataclasses import dataclass
 from ipaddress import IPv4Network
 

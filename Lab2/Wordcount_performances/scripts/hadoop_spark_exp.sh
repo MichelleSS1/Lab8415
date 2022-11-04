@@ -65,6 +65,7 @@ hdfs dfs -mkdir -p input;
 # Install git and clone Datasets
 apt install git -y;
 git clone https://github.com/MichelleSS1/Lab8415.git;
+git checkout lab2;
 
 cd Lab2/Wordcount_performances || exit;
 

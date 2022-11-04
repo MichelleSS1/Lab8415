@@ -68,6 +68,8 @@ printf "\n"
 # Setup infra
 python infra/setup_infra.py
 
+# Run Hadoop and Spark experiments remotely
+python scripts/remote_exec.py
 
 # Teardown of the infrastructure
 python infra/teardown_infra.py

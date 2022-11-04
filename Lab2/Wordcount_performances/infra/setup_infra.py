@@ -1,6 +1,5 @@
 import os
 import sys
-from time import sleep
 import boto3
 from infra_utils import InfraInfo, create_security_group, get_key_pair_name, get_subnets, get_vpc_id, save_infra_info
 
@@ -88,11 +87,18 @@ if __name__ == '__main__':
         security_group = create_security_group('lab2-sg', "Lab2", vpc_id, [SSH_PORT], [])
         infra_info.security_groups_ids.append(security_group.id)
 
-        instance_id = create_ubuntu_instances("m4.large", 1, 1, get_key_pair_name(), subnet1_id, [security_group.id], {'lab': 'lab2'})[0].id
-        infra_info.intances_ids.append(instance_id)
+        key_pair_name = get_key_pair_name()
+        instance = create_ubuntu_instances("m4.large", 1, 1, key_pair_name, subnet1_id, [security_group.id], {'lab': 'lab2'})[0]
+        infra_info.intances_ids.append(instance.id)
 
         waiter = ec2_client.get_waiter('instance_running')
-        waiter.wait(InstanceIds=[instance_id])
+        waiter.wait(InstanceIds=[instance.id])
+        instance.reload()
+        print(instance.public_ip_address)
+
+        with open(os.path.join(sys.path[0], 'ssh_info.txt'), 'w') as f:
+            f.write(key_pair_name)
+            f.write(instance.public_ip_address)
 
         print("done\n")
 
