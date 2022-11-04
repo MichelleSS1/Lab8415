@@ -67,6 +67,7 @@ if __name__ == '__main__':
     for line in stderr:
         print(line)
 
+    print("Making plots from results")
     result = pd.DataFrame({'hadoop': hadoop_scores, 'spark': spark_scores})
 
     # Create the graph
@@ -95,3 +96,5 @@ if __name__ == '__main__':
 
     # Close the figure window
     plt.close(fig)
+    
+    print("done\n")

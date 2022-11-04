@@ -31,6 +31,23 @@ do
   } 2>&1 | awk '/real/{print $2}' | awk '{gsub(/0m/, "")}1' | awk '{gsub(/s/, "")}1' >> ~/hadoop.txt;
 done;
 
+
 # Compute WordCount using Spark on the datasets
-BASEDIR=$(dirname "$0")
-python3 ${BASEDIR}/spark_exp.py
+for i in $(seq 1 3);
+do
+  { time python3 -c "
+import findspark
+import shutil
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.master('local').appName('FirstProgram').getOrCreate()
+sc=spark.sparkContext
+text_file = sc.textFile('Datasets/*.txt')
+counts = text_file.flatMap(lambda line: line.split(' ')).map(lambda word: (word, 1)).reduceByKey(lambda x, y: x + y)
+output = counts.collect()
+for (word, count) in output:
+  print("%s: %i" % (word, count))
+counts.saveAsTextFile('output.txt')
+sc.stop()
+spark.stop()
+  " > /dev/null 2>&1 ; } 2>&1 | awk '/real/{print $2}' | awk '{gsub(/0m/, "")}1' | awk '{gsub(/s/, "")}1' >> ~/spark.txt;
+done;
