@@ -71,7 +71,7 @@ In the map() function, Hadoop automatically splits the input file into lines. Th
     From this, we see that 2 can reach 2,3,4,5 via 1, and 2 can reach 2,3,4,5,7 via 6.
 \end{enumerate}
 \section{Reduce with Hadoop (Java)}
-The reducer collects, for each user, all their friends of friends along with from which friend these come from. For example, if 2 can reach 3 via 1 and 4, then 2 and 3 have two mutual friends, namely 1 and 4. The reduce function basically counts how many times a user ID appears in this lists, and returns the ones that appear most often after removing the ones that the user have already added. If the friend list contains null, the reducer outputs an empty list of suggestions. For example, if we have
+The reducer collects, for each user, all their friends of friends along with from which friend these come from. For example, if 2 can reach 3 via 1 and 4, then 2 and 3 have two mutual friends, namely 1 and 4. The reduce function basically counts how many times a user ID appears in this lists, and returns the ones that appear most often after removing the ones that the user have already added. If the friend list contains null, the reducer outputs an empty list of suggestions. If not, the following steps will be taken: for example, if we have
 \begin{itemize}
     \item key \space \space \space = 2
     \item value = 1TAB2,3,4,5
@@ -80,9 +80,69 @@ Let \verb|alreadyAdded| be a hashset of hashsets of strings that contains all th
 \begin{enumerate}
     \item The string \verb|1TAB2,3,4,5| is splitted by tab to get \verb|["1", "2,3,4,5"]|, and the value \verb|"2,3,4,5"| is splitted by \verb|,| to get the array \verb|potentialFriends = [2, 3, 4, 5]|
     \item The reducer will add \verb|HashSet[(2)]| and \verb|HashSet[(2,1)]| in \verb|alreadyAdded| since 2 cannot add 2 and 2 has already added 1.
-    \item  For each user \verb|u| in the list 
+    \item  For each user \verb|u| in the list \verb|potentialFriends|, a \verb|HashSet h = HashSet([2,u])| will be created. If h is already in \verb|mutualFriendsCount|, it will be added as a key with a value of 1. If it's already added, we will increase its value by 1.
 \end{enumerate}
-
+After all the values associated with 2 have been processed, the keys contained in \verb|alreadyAdded| will be removed from \verb|mutualFriendsCount|. The rest will be stored in an array of \verb|Pair| objects, with a \verb|count| attribute that indicates the number of mutual friends and a \verb|uid| attribute that indicates the user ID. The array is then sorted by \verb|Pair.count| (descending order) then by \verb|Pair.uid| (ascending order). The uid of the 10 first Pair objects (or the whole array, if less than 10 friends of friends) will be returned. Example:
+\begin{itemize}
+    \item key \space \space \space = 2
+    \item value = 1TAB2,3,4,5
+    \item value = 6TAB4,3,7,5
+    \item value = 8TAB6,3,4,5
+\end{itemize}
+After processing all the values, \verb|alreadyAdded| will contain
+\begin{python}
+HashSet([
+    HashSet([2]),
+    HashSet([2, 1]),
+    HashSet([2, 6]),
+    HashSet([2, 8])
+])
+\end{python}
+And \verb|mutualFriendsCount| will contain
+\begin{python}
+HashMap([
+    HashSet([2   ]): 1,
+    HashSet([2, 1]): 1,
+    HashSet([2, 3]): 3,
+    HashSet([2, 4]): 2,
+    HashSet([2, 5]): 3,
+    HashSet([2, 6]): 2,
+    HashSet([2, 7]): 1,
+    HashSet([2, 8]): 1,
+])
+\end{python}
+After removing the contents of \verb|alreadyAdded| from \verb|mutualFriendsCount|, \verb|mutualFriendsCount| will contain
+\begin{python}
+HashMap([
+    HashSet([2, 3]): 3,
+    HashSet([2, 4]): 2,
+    HashSet([2, 5]): 3,
+    HashSet([2, 7]): 1,
+])
+\end{python}
+And an array containing
+\begin{python}
+array = [
+    Pair{uid="3", count= 3},
+    Pair{uid="4", count= 2},
+    Pair{uid="5", count= 3},
+    Pair{uid="7", count= 1},
+]
+\end{python}
+will be produced, then sorted first according to count, then according to uid (ex. "3" comes before "5" because 3 < 5, even though they both have three mutual friends with 2):
+\begin{python}
+array = [
+    Pair{uid="3", count= 3},
+    Pair{uid="5", count= 3},
+    Pair{uid="4", count= 2},
+    Pair{uid="7", count= 1},
+]
+\end{python}
+The output will be
+\begin{itemize}
+    \item key = 2
+    \item value = 3,5,4,7
+\end{itemize}
 \end{justifying}
 
 \end{document}
