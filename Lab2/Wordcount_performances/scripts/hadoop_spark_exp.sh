@@ -15,10 +15,10 @@ wget https://dlcdn.apache.org/hadoop/common/hadoop-3.3.4/hadoop-3.3.4.tar.gz;
 tar -xf hadoop-3.3.4.tar.gz;
 
 # Setup Hadoop environment variables
-echo "export HADOOP_HOME=hadoop-3.3.4" >> ~/.profile;
+echo "export HADOOP_HOME=~/hadoop-3.3.4" >> ~/.profile;
 echo "export PATH=\$HADOOP_HOME/bin:\$PATH"  >>  ~/.profile;
 echo "export JAVA_HOME=/usr/lib/jvm/default-java" >> "$HADOOP_HOME"/etc/hadoop/hadoop-env.sh;
-echo "export HADOOP_HOME=hadoop-3.3.4" >> "$HADOOP_HOME"/etc/hadoop/hadoop-env.sh;
+echo "export HADOOP_HOME=~/hadoop-3.3.4" >> "$HADOOP_HOME"/etc/hadoop/hadoop-env.sh;
 
 source ~/.profile;
 
