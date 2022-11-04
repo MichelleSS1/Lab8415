@@ -73,4 +73,4 @@ sudo apt install python3-pip -y;
 pip install pyspark findspark;
 
 # Run performance tests
-./testing_script.sh
+./scripts/testing_script.sh
