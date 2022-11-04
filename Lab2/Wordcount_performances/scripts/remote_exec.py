@@ -33,6 +33,8 @@ def run_hadoop_spark_exp():
         all_stderr.append(stderr)
         print("done\n")
     else:
+        for line in stderr:
+            print(line)
         raise Exception("Tests execution didn't succeed")
 
     print("Collecting hadoop results")
@@ -42,6 +44,8 @@ def run_hadoop_spark_exp():
         all_stderr.append(stderr)
         print("done\n")
     else:
+        for line in stderr:
+            print(line)
         raise Exception("Failed to collect hadoop results")
 
     print("Collecting spark results")
@@ -51,6 +55,8 @@ def run_hadoop_spark_exp():
         all_stderr.append(stderr)
         print("done\n")
     else:
+        for line in stderr:
+            print(line)
         raise Exception("Failed to collect spark results")
 
     print("Collecting hadoop vs linux results")
@@ -60,6 +66,8 @@ def run_hadoop_spark_exp():
         all_stderr.append(stderr)
         print("done\n")
     else:
+        for line in stderr:
+            print(line)
         raise Exception("Failed to collect hadoop vs linux results")
     
     stderr_lines = []
