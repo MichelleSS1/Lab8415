@@ -97,6 +97,7 @@ if __name__ == '__main__':
         instance.reload()
         print("done\n")
 
+        print("Storing instance public ip and private key for ssh")
         with open(os.path.join(sys.path[0], 'public_ip.txt'), 'w') as f:
             f.write(instance.public_ip_address)
 

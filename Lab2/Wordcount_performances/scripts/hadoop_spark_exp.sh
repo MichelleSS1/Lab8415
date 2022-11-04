@@ -12,13 +12,13 @@ echo "export JAVA_HOME=/usr/lib/jvm/default-java"  >>  ~/.profile;
 
 # Installing Hadoop
 wget https://dlcdn.apache.org/hadoop/common/hadoop-3.3.4/hadoop-3.3.4.tar.gz;
-tar -xf hadoop-3.3.4.tar.gz -C /usr/local/;
+tar -xf hadoop-3.3.4.tar.gz;
 
 # Setup Hadoop environment variables
-echo "export HADOOP_HOME=/usr/local/hadoop-3.3.4" >> ~/.profile;
+echo "export HADOOP_HOME=hadoop-3.3.4" >> ~/.profile;
 echo "export PATH=\$HADOOP_HOME/bin:\$PATH"  >>  ~/.profile;
 echo "export JAVA_HOME=/usr/lib/jvm/default-java" >> "$HADOOP_HOME"/etc/hadoop/hadoop-env.sh;
-echo "export HADOOP_HOME=/usr/local/hadoop-3.3.4" >> "$HADOOP_HOME"/etc/hadoop/hadoop-env.sh;
+echo "export HADOOP_HOME=hadoop-3.3.4" >> "$HADOOP_HOME"/etc/hadoop/hadoop-env.sh;
 
 source ~/.profile;
 
@@ -67,7 +67,7 @@ apt install git -y;
 git clone https://github.com/MichelleSS1/Lab8415.git;
 git checkout lab2;
 
-cd Lab2/Wordcount_performances || exit;
+cd Lab8415/Lab2/Wordcount_performances || exit;
 
 # Create a JAR file
 hadoop com.sun.tools.javac.Main ./WordCount.java;
@@ -81,7 +81,3 @@ pip install pyspark findspark;
 
 # Run performance tests
 ./testing_script.sh
-
-clear
-
-cat results.txt
