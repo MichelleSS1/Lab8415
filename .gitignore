@@ -141,3 +141,5 @@ lb_dns_name.txt
 **/input*
 
 **/*.pem
+
+.vscode/

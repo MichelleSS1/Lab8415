@@ -1,5 +1,6 @@
 import os
 import sys
+from time import sleep
 import paramiko
 import boto3
 
@@ -23,19 +24,36 @@ def run_hadoop_spark_exp():
 
     print("Executing command via SSH")
     _, _, stderr1 = client.exec_command(command=script, get_pty=True)
-    _, stdout, stderr2 = client.exec_command('cat ~/results.txt')
+    sleep(15)
+
+    _, hadoop_res, stderr2 = client.exec_command('cat ~/hadoop.txt')
+    _, spark_res, stderr3 = client.exec_command('cat ~/spark.txt')
+
     print("done\n")
 
-    stderr = stderr1.readlines() + stderr2.readlines()
+    stderr = stderr1.readlines() + stderr2.readlines() + stderr3.readlines()
 
-    return stdout, stderr
+    return hadoop_res, spark_res, stderr
 
 
 if __name__ == '__main__':
-    stdout, stderr = run_hadoop_spark_exp()
+    hadoop_res, spark_res, stderr = run_hadoop_spark_exp()
+
+    
+    with open(os.path.join(sys.path[0], '../hadoop.txt'), 'w') as f:
+        f.writelines(hadoop_res)
+        
+    with open(os.path.join(sys.path[0], '../spark.txt'), 'w') as f:
+        f.writelines(spark_res)
 
     print("Experiment results:\n")
-    for line in stdout:
+
+    print("Hadoop:")
+    for line in hadoop_res:
+        print(line)
+
+    print("Spark:")
+    for line in spark_res:
         print(line)
 
     print("Error output:\n")
