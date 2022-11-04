@@ -3,6 +3,10 @@
 # Inspired by wordcount.py
 
 rm -f ~/results.txt
+# Creating Input
+hdfs dfs -mkdir -p input;
+hdfs dfs -copyFromLocal pg4300.txt input
+
 # Compute the word frequency of the pg4300 dataset using Hadoop
 echo -n "Hadoop - pg4300" >> ~/results.txt;
 { 
@@ -40,7 +44,6 @@ echo '---- Apache Spark -----' >> ~/results.txt;
 for file in $(ls ./Datasets/)
 do
   # Remove file extensions
-  filename=$(echo $file);
   echo -n $file >> ~/results.txt;
   { time python3 -c "
 import findspark
