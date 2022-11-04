@@ -16,20 +16,14 @@ class InfraInfo:
     security_groups_ids:"list[str]"
 
 
-def get_key_pair_name():
+def get_key_pair(name):
     """
-    Returns a key pair name.
+    Returns a key pair.
     """
-    key_pairs = ec2_client.describe_key_pairs()['KeyPairs']
-    selected_key_pair_name = ''
+    ec2_client.delete_key_pair(KeyName=name)
+    key_pair = ec2_client.create_key_pair(KeyName=name)
 
-    if len(key_pairs) > 0:
-        selected_key_pair_name = key_pairs[0]['KeyName']
-    else:
-        # Create a key pair if we don't already have one
-        selected_key_pair_name = ec2_client.create_key_pair(KeyName='log8415_key')['KeyName']
-
-    return selected_key_pair_name
+    return key_pair
 
 def get_vpc_id():
     """

@@ -1,7 +1,7 @@
 import os
 import sys
 import boto3
-from infra_utils import InfraInfo, create_security_group, get_key_pair_name, get_subnets, get_vpc_id, save_infra_info
+from infra_utils import InfraInfo, create_security_group, get_key_pair, get_subnets, get_vpc_id, save_infra_info
 
 ec2_client = boto3.client('ec2')
 ec2 = boto3.resource('ec2')
@@ -87,8 +87,8 @@ if __name__ == '__main__':
         security_group = create_security_group('lab2-sg', "Lab2", vpc_id, [SSH_PORT], [])
         infra_info.security_groups_ids.append(security_group.id)
 
-        key_pair_name = get_key_pair_name()
-        instance = create_ubuntu_instances("m4.large", 1, 1, key_pair_name, subnet1_id, [security_group.id], {'lab': 'lab2'})[0]
+        key_pair = get_key_pair('log8415-lab2-key')
+        instance = create_ubuntu_instances("m4.large", 1, 1, key_pair['KeyName'], subnet1_id, [security_group.id], {'lab': 'lab2'})[0]
         infra_info.instances_ids.append(instance.id)
 
         print("Waiting for instance to be in a running state")
@@ -97,8 +97,11 @@ if __name__ == '__main__':
         instance.reload()
         print("done\n")
 
-        with open(os.path.join(sys.path[0], 'ssh_info.txt'), 'w') as f:
-            f.writelines([key_pair_name + '\n', instance.public_ip_address])
+        with open(os.path.join(sys.path[0], 'public_ip.txt'), 'w') as f:
+            f.write(instance.public_ip_address)
+
+        with open(os.path.join(sys.path[0], 'pkey.pem'), 'w') as f:
+            f.write(key_pair['KeyMaterial'])
 
         print("done\n")
 

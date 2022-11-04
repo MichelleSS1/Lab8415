@@ -9,15 +9,16 @@ def run_hadoop_spark_exp():
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy)
 
-    with open(os.path.join(sys.path[0], '../infra/ssh_info.txt'), 'r') as f:
-        key_pair = ec2.KeyPair(f.readline())
+    with open(os.path.join(sys.path[0], '../infra/public_ip.txt'), 'r') as f:
         public_ip = f.readline()
+
+    pKey_filename = os.path.join(sys.path[0], '../infra/pkey.pem')
 
     script = ''
     with open(os.path.join(sys.path[0], 'hadoop_spark_exp.sh'), 'r') as f:
         script = f.read()
 
-    client.connect(hostname=public_ip, port=22, username='ubuntu', pkey=key_pair.key_material)
+    client.connect(hostname=public_ip, port=22, username='ubuntu', key_filename=pKey_filename)
     _, stdout, stderr = client.exec_command(script)
 
     return stdout, stderr
