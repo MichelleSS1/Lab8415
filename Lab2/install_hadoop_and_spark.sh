@@ -4,7 +4,6 @@
 
 # Installing Java
 cd ~ || exit;
-apt install -y default-jdk;
 apt install default-jre -y;
 apt install default-jdk -y;
 
