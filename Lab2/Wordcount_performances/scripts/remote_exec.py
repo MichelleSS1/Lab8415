@@ -82,7 +82,7 @@ if __name__ == '__main__':
 
     had_vs_linux_lines = had_vs_linux.read()
     with open(os.path.join(sys.path[0], '../hadoop_vs_linux.txt'), 'w') as f:
-        f.write(had_vs_linux_lines)
+        f.write(str(had_vs_linux_lines))
 
     hadoop_scores = []
     spark_scores = []

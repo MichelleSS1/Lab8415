@@ -27,7 +27,7 @@ check_aws_var() {
             # If variable not available in environment,
             # take its value from user input and export it for scripts
             read -r -p "Don't worry! Enter ${var_name} : " answer
-            export "${var_name}"="${answer}"
+            echo export "${var_name}"="${answer}" >> log8415_aws_env
         else 
             printf "It seems you have set the environment variable ${var_name}. Good job!\n"
         fi
@@ -35,11 +35,18 @@ check_aws_var() {
     printf "\n"
 }
 
+# Source env file
+if [ -f log8415_aws_env ]
+then
+    source ./log8415_aws_env
+fi
+
 # Loop through the array AWS_ENV_VAR
 for env_var in "${AWS_ENV_VAR[@]}"
 do
     check_aws_var "$env_var"
 done
+source ./log8415_aws_env
 
 # Check if a session_token is needed
 answer=''
@@ -62,17 +69,27 @@ python3 -m venv log8415_lab1_venv
 source log8415_lab1_venv/bin/activate
 
 pip install -r requirements.txt
-pip install -e .
 printf "\n"
 
 # Setup infra
 python infra/setup_infra.py
 
+# Teardown created infra if setup fails then exit
+# $? is the exit code of the last executed command
+if [ "$?" != "0" ]
+then
+    python infra/teardown_infra.py
+    exit 1
+fi
+printf "\n"
+
 # Run Hadoop and Spark experiments remotely
+chmod 600 infra/pkey.pem
 python scripts/remote_exec.py
 
 # Teardown of the infrastructure
 python infra/teardown_infra.py
+rm -rf infra/infra_info infra/public_ip.txt infra/pkey.pem
 
 # Exit virtual environment
 deactivate
