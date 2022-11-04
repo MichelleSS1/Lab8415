@@ -49,8 +49,6 @@ touch ~/start-dfs;
 
 source ~/.profile;
 
-# Starting Hadoop
-"$HADOOP_HOME"/sbin/start-dfs.sh;
 
 # Install git and clone Datasets
 sudo apt install git -y;
@@ -67,7 +65,7 @@ jar cf wordcount.jar WordCount*.class;
 # Installation of Spark dependencies
 sudo apt-get update;
 sudo apt install python3-pip -y;
-pip install pyspark findspark;
+pip install pyspark;
 
 # Run performance tests
 ./scripts/testing_script.sh

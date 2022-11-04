@@ -3,6 +3,8 @@ import sys
 from time import sleep
 import paramiko
 import boto3
+import pandas as pd
+import matplotlib.pyplot as plt
 
 ec2 = boto3.resource('ec2')
 
@@ -22,7 +24,7 @@ def run_hadoop_spark_exp():
     print("SSH connection to instance")
     client.connect(hostname=public_ip, port=22, username='ubuntu', key_filename=pKey_filename)
 
-    print("Executing command via SSH")
+    print("Executing tests via SSH. It may take some time.")
     _, _, stderr1 = client.exec_command(command=script, get_pty=True)
     sleep(15)
 
@@ -42,20 +44,54 @@ if __name__ == '__main__':
     
     with open(os.path.join(sys.path[0], '../hadoop.txt'), 'w') as f:
         f.writelines(hadoop_res)
-        
+
     with open(os.path.join(sys.path[0], '../spark.txt'), 'w') as f:
         f.writelines(spark_res)
+
+    hadoop_scores = []
+    spark_scores = []
 
     print("Experiment results:\n")
 
     print("Hadoop:")
     for line in hadoop_res:
         print(line)
+        hadoop_scores.append(float(line))
 
     print("Spark:")
     for line in spark_res:
         print(line)
+        spark_scores.append(float(line))
 
     print("Error output:\n")
     for line in stderr:
         print(line)
+
+    result = pd.DataFrame({'hadoop': hadoop_scores, 'spark': spark_scores})
+
+    # Create the graph
+    fig, axs = plt.subplots(nrows=1, ncols=3, sharey=True)
+
+    # Define variables x, y for the graph
+    x = range(1, 4)
+    y1 = result['hadoop']     
+    y2 = result['spark']
+
+    axs[0].set_title('Hadoop')   
+    axs[0].plot(x, y1, 'o-')
+
+    axs[1].set_title('Spark')
+    axs[1].plot(x, y2, 'o-')
+
+    axs[2].set_title('Average')   
+    axs[2].plot(['Hadoop', 'Spark'], [y1.mean(), y2.mean()], 'o-')
+
+    axs[0].set_ylabel('Time (s)')
+    
+    fig.suptitle('Execution time')
+
+    # Save plot and show it 
+    plt.savefig(os.path.join(sys.path[0], f'../execution_time.png'), bbox_inches='tight')
+
+    # Close the figure window
+    plt.close(fig)
