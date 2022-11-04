@@ -7,7 +7,7 @@ import time
 spark = SparkSession.builder.master('local').appName('FirstProgram').getOrCreate()
 sc = spark.sparkContext
 
-with open('~/spark.txt', 'a') as f:
+with open('~/spark.txt', 'a+') as f:
     dataset_path = os.path.join(sys.path[0], '../Datasets/*.txt')
     for i in range(3):
         start_time = time.time()

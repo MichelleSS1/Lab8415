@@ -51,7 +51,6 @@ source ~/.profile;
 
 
 # Install git and clone Datasets
-sudo apt install git -y;
 git clone https://github.com/MichelleSS1/Lab8415.git;
 
 cd Lab8415/Lab2/Wordcount_performances || exit;

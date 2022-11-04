@@ -1,5 +1,6 @@
 import os
 import sys
+from time import sleep
 import boto3
 from infra_utils import InfraInfo, create_security_group, get_key_pair, get_subnets, get_vpc_id, save_infra_info
 
@@ -103,6 +104,8 @@ if __name__ == '__main__':
 
         with open(os.path.join(sys.path[0], 'pkey.pem'), 'w') as f:
             f.write(key_pair['KeyMaterial'])
+        
+        sleep(60)
 
         print("done\n")
 
