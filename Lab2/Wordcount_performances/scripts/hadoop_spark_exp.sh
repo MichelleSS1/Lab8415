@@ -4,8 +4,8 @@
 
 # Installing Java
 cd ~ || exit;
-apt install default-jre -y;
-apt install default-jdk -y;
+sudo apt install default-jre -y;
+sudo apt install default-jdk -y;
 
 # 2. Export the JAVA_HOME environment variable
 echo "export JAVA_HOME=/usr/lib/jvm/default-java"  >>  ~/.profile;
@@ -56,7 +56,7 @@ source ~/.profile;
 hdfs dfs -mkdir -p input;
 
 # Install git and clone Datasets
-apt install git -y;
+sudo apt install git -y;
 git clone https://github.com/MichelleSS1/Lab8415.git;
 
 cd Lab8415/Lab2/Wordcount_performances || exit;
@@ -68,8 +68,8 @@ jar cf wordcount.jar WordCount*.class;
 
 
 # Installation of Spark dependencies
-apt-get update;
-apt install python3-pip -y;
+sudo apt-get update;
+sudo apt install python3-pip -y;
 pip install pyspark findspark;
 
 # Run performance tests
