@@ -5,6 +5,6 @@ export HADOOP_CLASSPATH=${JAVA_HOME}/lib/tools.jar
 
 /home/ruijieli/Desktop/hadoop-3.3.4/bin/hadoop com.sun.tools.javac.Main MutualFriends.java Pair.java
 
-jar cf tp1.jar *.class
+jar cf tp2.jar *.class
 
-/home/ruijieli/Desktop/hadoop-3.3.4/bin/hadoop jar tp1.jar MutualFriends /home/ruijieli/Desktop/input /home/ruijieli/Desktop/output
+/home/ruijieli/Desktop/hadoop-3.3.4/bin/hadoop jar tp2.jar MutualFriends /home/ruijieli/Desktop/input /home/ruijieli/Desktop/output
