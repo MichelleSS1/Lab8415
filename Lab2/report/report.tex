@@ -260,7 +260,17 @@ we can verify manually that 0 and 38737 have 5 friends in common, and 0 and 1859
 \subsection{How to run the program}
 All the code for running the program is in compile.sh. The only parts that need to be changed
 manually is the input and the output directory, along with the hadoop path (if necessary). To
-run compile.sh, just type ./compile.sh in its directory.
+run compile.sh, just type ./compile.sh in its directory.\\
+However, if it does not work, it can be ran this way (code based on Apache Hadoop word count tutorial, 2022):
+
+\begin{python}
+rm -r path/to/output
+export JAVA_HOME="/path/to/java/"
+export PATH=${JAVA_HOME}/bin:\${PATH}
+export HADOOP_CLASSPATH=\${JAVA_HOME}/lib/tools.jar
+/path/to/hadoop/bin/hadoop com.sun.tools.javac.Main MutualFriends.java Pair.java
+/path/to/hadoop/bin/hadoop jar tp2.jar MutualFriends /path/input /path/output
+\end{python}
 
 \subsection{Results on Azure}
 We also run this program on Azure (this is a screenshot of the content of the output file):
@@ -274,6 +284,7 @@ We also run this program on Azure (this is a screenshot of the content of the ou
 
 \section{References}
 [1] Gutenberg textual data. http://www.gutenberg.org/cache/epub/4300/pg4300.txt.\newline
-[2] Github repo. https://github.com/MichelleSS1/Lab8415
+[2] Github repo. https://github.com/MichelleSS1/Lab8415\newline
+[3] Apache Software Foundation. (2022, July 29). {\it{Mapreduce tutorial}}. Apache Hadoop. Retrieved November 4, 2022, from https://hadoop.apache.org/docs/stable/hadoop-mapreduce-client/hadoop-mapreduce-client-core/MapReduceTutorial.html 
 
 \end{document}
