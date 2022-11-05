@@ -1,4 +1,5 @@
 \documentclass[11pt]{article}
+\usepackage{float}
 \usepackage{amssymb}
 \usepackage[english]{babel}
 \usepackage{fullpage}
@@ -241,18 +242,33 @@ The output will be
 
 \subsection{Result}
 For the following users, we have:\\
-924 	439,2409,6995,11860,15416,43748,45881\\
-8941	8943,8944,8940\\
-8942	8939,8940,8943,8944\\
-9019	9022,317,9023\\
-9020	9021,9016,9017,9022,317,9023\\
-9021	9020,9016,9017,9022,317,9023\\
-9022	9019,9020,9021,317,9016,9017,9023\\
-9990	13134,13478,13877,34299,34485,34642,37941\\
-9992	9987,9989,35667,9991\\
-9993	9991,13134,13478,13877,34299,34485,34642,37941
+924 \space \space \space \space439,2409,6995,11860,15416,43748,45881\\
+8941\space \space \space \space8943,8944,8940\\
+8942\space \space \space \space8939,8940,8943,8944\\
+9019\space \space \space \space9022,317,9023\\
+9020\space \space \space \space9021,9016,9017,9022,317,9023\\
+9021\space \space \space \space9020,9016,9017,9022,317,9023\\
+9022\space \space \space \space9019,9020,9021,317,9016,9017,9023\\
+9990\space \space \space \space13134,13478,13877,34299,34485,34642,37941\\
+9992\space \space \space \space9987,9989,35667,9991\\
+9993\space \space \space \space9991,13134,13478,13877,34299,34485,34642,37941\\
+All the users have received either 10 recommendations or as many as possible. For example, one of the result is\\
+0\space \space \space \space38737,18591,27383,34211,337,352,1532,12143,12561,17880\\
+we can verify manually that 0 and 38737 have 5 friends in common, and 0 and 18591 have
+4 mutual friends in common, and so on.
 
+\subsection{How to run the program}
+All the code for running the program is in compile.sh. The only parts that need to be changed
+manually is the input and the output directory, along with the hadoop path (if necessary). To
+run compile.sh, just type ./compile.sh in its directory.
 
+\subsection{Results on Azure}
+We also run this program on Azure (this is a screenshot of the content of the output file):
+\begin{figure}[H]
+    \includegraphics[width=\linewidth]{azure.png}
+    \caption{Output of MapReduce from Microsoft Azure}
+    \label{fig:mrazure}
+\end{figure}
 
 \end{justifying}
 
