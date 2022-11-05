@@ -4,6 +4,11 @@
 
 # Installing Java
 cd ~ || exit
+
+# To prevent interactive pop up with services to restart
+sudo sed -i "s/\#\$nrconf{restart} = 'i'/\$nrconf{restart} = 'l'/" /etc/needrestart/needrestart.conf
+
+sudo apt-get update
 sudo apt install default-jre -y
 sudo apt install default-jdk -y
 
@@ -33,7 +38,6 @@ jar cf wordcount.jar WordCount*.class
 
 
 # Installation of Spark dependencies
-sudo apt-get update
 sudo apt install python3-pip -y
 pip install pyspark
 
