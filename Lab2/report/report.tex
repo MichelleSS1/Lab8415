@@ -313,12 +313,12 @@ We also run this program on Azure (this is a screenshot of the content of the ou
 \begin{figure}[H]
     \centering
     \includegraphics[width=\linewidth]{Azure-reset-ssh.PNG}
-    \caption{Basic configuration (next section)}
+    \caption{Changing public key (public key not shown for security reasons)}
     \label{fig:mrazure}
 \end{figure}
     \item the following commands are used to connect to the VM:
     \begin{lstlisting}[language=Bash]
-# on a local machine
+# on a local machine (step 3)
 chmod 400 path/to/private_key.pem
 ssh -i path/to/private_key.pem <azure user name>@<public IP of VM>
 
