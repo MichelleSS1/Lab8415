@@ -8,6 +8,7 @@
 \usepackage{pythonhighlight}
 \usepackage{listings}
 \usepackage{ragged2e}
+\usepackage{listings}
 
 \def\titre{}
 \def\auteur{}
@@ -269,11 +270,74 @@ export JAVA_HOME="/path/to/java/"
 export PATH=${JAVA_HOME}/bin:\${PATH}
 export HADOOP_CLASSPATH=\${JAVA_HOME}/lib/tools.jar
 /path/to/hadoop/bin/hadoop com.sun.tools.javac.Main MutualFriends.java Pair.java
+jar cf tp2.jar *.class
 /path/to/hadoop/bin/hadoop jar tp2.jar MutualFriends /path/input /path/output
 \end{python}
 
 \subsection{Results on Azure}
 We also run this program on Azure (this is a screenshot of the content of the output file):
+\begin{enumerate}
+    \item Create a Linux virtual machine with the following setup in the "basic" section (the rest can be left to default settings): 
+    \begin{python}
+    name of the virtual machine: mapreduce
+    availability region: (Canada) Canada central
+    Select inbound ports: HTTP, SSH, HTTPS
+    Username: can be anything
+    key pair name: can be anything    
+    \end{python}
+    
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{azure-setup1.PNG}
+    \caption{Basic configuration}
+    \label{fig:mrazure}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{azure-setup2.PNG}
+    \caption{Basic configuration (next section)}
+    \label{fig:mrazure}
+\end{figure}
+
+    \item For disks, select "Standard HDD" for better cost. The rest of the options can be left as default (Networking,Management, Monitoring, Advanced, Tags).
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{azure-disk.PNG}
+    \caption{Disk configuration}
+    \label{fig:mrazure}
+\end{figure}
+
+    \item After the machine is up and running, an SSH key pair is generated on a local linux machine, and the public key of the virtual machine (on Azure) is updated using the "reset password" functionality
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{Azure-reset-ssh.PNG}
+    \caption{Basic configuration (next section)}
+    \label{fig:mrazure}
+\end{figure}
+    \item the following commands are used to connect to the VM:
+    \begin{lstlisting}[language=Bash]
+# on a local machine
+chmod 400 path/to/private_key.pem
+ssh -i path/to/private_key.pem <azure user name>@<public IP of VM>
+
+# on the Azure Virtual machine
+sudo apt-get update
+sudo apt-get install openjdk-17-jre-headless
+export JAVA_HOME="/path/to/java"
+sudo wget <link to hadoop version>
+sudo tar -xvzf path/to/hadoop.tar.gz
+
+# on the local machine
+sudo scp -i path/to/private/key tp2.jar \
+    <azure user name>@<public IP of VM>:/home/azureuser
+sudo scp -i path/to/compile.sh \
+    <azure user name>@<public IP of VM>:/home/azureuser
+./compile.sh
+\end{lstlisting}
+\end{enumerate}
+
 \begin{figure}[H]
     \includegraphics[width=\linewidth]{azure.png}
     \caption{Output of MapReduce from Microsoft Azure}
