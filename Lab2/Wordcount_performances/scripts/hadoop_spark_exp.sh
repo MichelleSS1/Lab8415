@@ -4,6 +4,11 @@
 
 # Installing Java
 cd ~ || exit
+
+# To prevent interactive pop up with services to restart
+sudo sed -i "s/\#\$nrconf{restart} = 'i'/\$nrconf{restart} = 'l'/" /etc/needrestart/needrestart.conf
+
+sudo apt-get update
 sudo apt install default-jre -y
 sudo apt install default-jdk -y
 
@@ -26,7 +31,6 @@ source ~/.profile
 git clone https://github.com/MichelleSS1/Lab8415.git
 
 cd Lab8415/Lab2/Wordcount_performances || exit
-git checkout lab2
 
 # Create a JAR file
 hadoop com.sun.tools.javac.Main ./WordCount.java
@@ -34,7 +38,6 @@ jar cf wordcount.jar WordCount*.class
 
 
 # Installation of Spark dependencies
-sudo apt-get update
 sudo apt install python3-pip -y
 pip install pyspark
 
